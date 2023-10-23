@@ -1,0 +1,8 @@
+/target
+
+# test binaries
+/test/bin
+
+# local utils
+pack.bat
+upx.exe

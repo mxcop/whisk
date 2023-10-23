@@ -1,0 +1,7 @@
+[project]
+name = "mix-test"
+
+[profile]
+cxx = "g++"
+src = [ "src/main.cpp" ]
+inc = [ "inc" ]
