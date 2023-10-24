@@ -13,10 +13,10 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
     let path = args.get_one::<PathBuf>("path").expect("Missing server name in `new` command.");
 
     // Read project config file.
-    let toml_path = path.join("mix.toml");
+    let toml_path = path.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
         return Err(CmdError::from_msg(
-            &format!("`mix.toml` not found in `{}`", path.to_str().unwrap_or("-"))
+            &format!("`whisk.toml` not found in `{}`", path.to_str().unwrap_or("-"))
         ));
     };
 
@@ -66,22 +66,28 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
     }
     spinner = Spinner::new(spinoff::spinners::Dots, "Compiling...", spinoff::Color::Magenta);
 
+    // Compilation timer.
+    let timer = std::time::SystemTime::now();
+
     // Execute the compiler.
     let process = cmd.spawn().expect("failed to spawn compiler");
     let _ = process.wait_with_output();
 
-    std::thread::sleep(std::time::Duration::from_millis(3000));
+    // Record compile time.
+    let time = timer.elapsed().unwrap().as_millis();
 
-    spinner.success("Compilation finished!");
+    // std::thread::sleep(std::time::Duration::from_millis(3000));
 
-    { // Pretty print.
-        let abs_str = std::fs::canonicalize(Path::new("./bin/")).unwrap().to_string_lossy().to_string();
-        let abs_path = abs_str.trim_start_matches("\\\\?\\"); // Remove Windows prefix
+    spinner.success(&format!("Compilation finished in {}ms!", time));
 
-        println!("\n{}Output dir{} : ({})", 
-            grn_style.render(), grn_style.render_reset(), 
-            abs_path);
-    }
+    // { // Pretty print.
+    //     let abs_str = std::fs::canonicalize(Path::new("./bin/")).unwrap().to_string_lossy().to_string();
+    //     let abs_path = abs_str.trim_start_matches("\\\\?\\"); // Remove Windows prefix
+
+    //     println!("\n{}Output dir{} : ({})", 
+    //         grn_style.render(), grn_style.render_reset(), 
+    //         abs_path);
+    // }
 
     Ok(())
 }

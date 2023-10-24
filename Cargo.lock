@@ -174,17 +174,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f665ee40bc4a3c5590afb1e9677db74a508659dfd71e126420da8274909a0167"
 
 [[package]]
-name = "mix"
-version = "0.1.0"
-dependencies = [
- "anstyle",
- "clap",
- "serde",
- "spinoff",
- "toml",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -329,6 +318,17 @@ name = "utf8parse"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
+
+[[package]]
+name = "whisk"
+version = "0.1.0"
+dependencies = [
+ "anstyle",
+ "clap",
+ "serde",
+ "spinoff",
+ "toml",
+]
 
 [[package]]
 name = "windows-sys"

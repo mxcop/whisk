@@ -4,7 +4,7 @@ use clap::{arg, Command};
 
 /// Mix CLI clap command.
 pub(crate) fn cli() -> Command {
-    Command::new("mix")
+    Command::new("whisk")
         .about("A simplistic build system for C/C++")
         .subcommand_required(true)
         .subcommand(
