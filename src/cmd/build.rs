@@ -3,9 +3,9 @@ use std::{path::{PathBuf, Path}, process::Command};
 use anstyle::{Style, AnsiColor};
 use clap::ArgMatches;
 use spinoff::Spinner;
-use crate::cfg::ProConfig;
+use crate::{cfg::ProConfig, werror, file::walk::{get_files, get_dirs}};
 
-use super::result::{CmdResult, CmdError};
+use super::result::CmdResult;
 
 /// Build a mix C/C++ project.
 pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
@@ -15,9 +15,7 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
     // Read project config file.
     let toml_path = path.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
-        return Err(CmdError::from_msg(
-            &format!("`whisk.toml` not found in `{}`", path.to_str().unwrap_or("-"))
-        ));
+        return Err(werror!("`whisk.toml` not found in `{}`", path.to_str().unwrap_or("-")));
     };
 
     // Parse project config file.
@@ -32,7 +30,7 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
 
         println!("{}Parsing{}   ~ {}{}{} {}({}){}", 
             mag_style.render(), mag_style.render_reset(), 
-            grn_style.render(), &project_cfg.project.name, grn_style.render_reset(), 
+            grn_style.render(), &project_cfg.package.name, grn_style.render_reset(), 
             dimmed.render(), abs_path, dimmed.render_reset());
     }
     
@@ -47,21 +45,21 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
     let mut cmd = Command::new(&compiler);
 
     // Add compiler arguments.
-    cmd.args(project_cfg.profile.src);
+    cmd.args(get_files(&project_cfg.profile.src)?);
 
     cmd.arg("-o");
-    cmd.arg(Path::new("./bin/").join(&project_cfg.project.name));
+    cmd.arg(Path::new("./bin/").join(&project_cfg.package.name));
 
     if let Some(include_dirs) = project_cfg.profile.inc {
         cmd.arg("-I");
-        cmd.args(include_dirs);
+        cmd.args(get_dirs(&include_dirs)?);
     }
 
     spinner.clear();
     { // Pretty print.
         println!("{}Compiling{} ~ {}{}{} {}({}){}", 
             mag_style.render(), mag_style.render_reset(), 
-            grn_style.render(), &project_cfg.project.name, grn_style.render_reset(), 
+            grn_style.render(), &project_cfg.package.name, grn_style.render_reset(), 
             dimmed.render(), compiler, dimmed.render_reset());
     }
     spinner = Spinner::new(spinoff::spinners::Dots, "Compiling...", spinoff::Color::Magenta);

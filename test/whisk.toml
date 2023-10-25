@@ -1,7 +1,7 @@
-[project]
-name = "mix-test"
+[package]
+name = "whisk-test"
 
 [profile]
 cxx = "g++"
-src = [ "src/main.cpp" ]
-inc = [ "inc" ]
+src = [ "src/**/*.cpp" ]
+inc = [ "inc/*" ]

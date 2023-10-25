@@ -2,12 +2,12 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct ProConfig {
-    pub project: Project,
+    pub package: Package,
     pub profile: Profile
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub(crate) struct Project {
+pub(crate) struct Package {
     pub name: String
 }
 

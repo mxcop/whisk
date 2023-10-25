@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anstyle = "1.0.4"
-clap = "4.4.6"
-serde = { version = "1.0.189", features = [ "derive" ] }
-spinoff = { version = "0.8.0", features = [ "dots" ] }
-toml = { version = "0.8.2", features = [ "parse", "display" ] }
+anstyle = "1.0.4"   # Terminal colors
+clap = "4.4.6"      # CLI engine
+glob = "0.3.1"      # Used for manifest filepaths
+
+serde = { version = "1.0.189", features = [ "derive" ] }        # Deserialize trait
+toml = { version = "0.8.2", features = [ "parse", "display" ] } # Toml parser
+spinoff = { version = "0.8.0", features = [ "dots" ] }          # Pretty terminal loading spinner
 
 [profile.dev]
 # This isn't required for development builds, but makes development
@@ -17,8 +19,8 @@ toml = { version = "0.8.2", features = [ "parse", "display" ] }
 panic = "abort"     # Abort on panic
 
 [profile.release]
-opt-level = "z"     # Optimize for size.
-lto = true          # Enable Link Time Optimization
-codegen-units = 1   # Reduce number of codegen units to increase optimizations.
+opt-level = "z"     # Optimize for size
+lto = true          # Enable link time optimization
+codegen-units = 1   # Reduce number of codegen units to increase optimizations
 panic = "abort"     # Abort on panic
-strip = true        # Automatically strip symbols from the binary.
+strip = true        # Automatically strip symbols from the binary

@@ -1,39 +1,45 @@
-use std::{path::Path, fs, ffi::OsStr};
+use std::path::PathBuf;
 
-/// Get all files with a specific file extension within a directory recursively.
-pub(crate) fn get_all_files(p: &Path, ext: &str) -> std::io::Result<Vec<String>> {
-    let mut files = Vec::<String>::with_capacity(64);
+use crate::{cmd::result::CmdResult, werror};
 
-    walk_path(&mut files, p, ext)?;
+/// Get all files from a list of file match patterns within the working directory.
+pub(crate) fn get_files(patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> {
+    let mut files = Vec::<PathBuf>::with_capacity(64);
+
+    // Go through all file patterns and collect the files into a vector.
+    for pattern in patterns {
+        // Perform the file glob.
+        let paths = match glob::glob(&pattern) {
+            Ok(r) => Ok(r),
+            Err(err) => Err(werror!("Invalid file matching pattern `{}`.\n{}", &pattern, err))
+        }?;
+
+        // Check for errors and push file into files buffer.
+        for path in paths {
+            let path = match path {
+                Ok(r) => Ok(r),
+                Err(err) => Err(werror!("File glob error for `{}`.\n{}", &pattern, err))
+            }?;
+
+            if path.is_file() {
+                files.push(path);
+            }
+        }
+    }
 
     Ok(files)
 }
 
-/// Recursively walk and collect all files in a directory.
-pub(crate) fn walk_path(
-    files: &mut Vec<String>,
-    p: &Path,
-    ext: &str,
-) -> std::io::Result<()> {
-    // Stop walking if path isn't a directory.
-    if !p.is_dir() {
-        return Ok(())
+/// Get all directories from a list of file match patterns within the working directory.
+pub(crate) fn get_dirs(patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> {
+    let mut files = Vec::<PathBuf>::with_capacity(64);
+
+    // Go through all file patterns and collect the files into a vector.
+    for pattern in patterns {
+        // Ignore wacky patterns.
+        let pattern = pattern.trim_end_matches("*").trim_end_matches("**/");
+        files.push(PathBuf::from(pattern));
     }
 
-    let dir = fs::read_dir(p)?;
-
-    for entry in dir {
-        let entry = entry?;
-        let path = entry.path();
-
-        walk_path(files, &path, ext)?;
-
-        let file_ext = path.extension().and_then(OsStr::to_str);
-        if let Some(file_ext) = file_ext {
-            if file_ext == ext {
-                files.push(path.to_string_lossy().to_string());
-            }
-        }
-    }
-    Ok(())
+    Ok(files)
 }

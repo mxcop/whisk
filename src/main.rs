@@ -11,7 +11,7 @@ fn main() {
 
     // Execute subcommand.
     let res = match matches.subcommand() {
-        Some(("new", matches)) => todo!(),
+        Some(("new", _matches)) => todo!(),
         Some(("build", matches)) => cmd::build::build(matches),
         Some(("run", matches)) => cmd::run::run(matches),
         _ => unreachable!(),

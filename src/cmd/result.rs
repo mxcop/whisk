@@ -28,3 +28,17 @@ impl fmt::Display for CmdError {
         write!(f, "Issue: {}", self.msg)
     }
 }
+
+/// Whisk error macro. (works same as [std::format])
+#[macro_export]
+macro_rules! werror {
+    ($fmt_str:literal) => {{
+        use crate::cmd::result::CmdError;
+        CmdError::from_msg($fmt_str)
+    }};
+
+    ($fmt_str:literal, $($args:expr),*) => {{
+        use crate::cmd::result::CmdError;
+        CmdError::from_msg(&format!($fmt_str, $($args),*))
+    }};
+}
