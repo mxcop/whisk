@@ -13,7 +13,7 @@ pub(crate) struct Package {
 
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct Profile {
-    pub cxx: Option<String>,
+    pub compiler: Option<String>,
     pub src: Vec<String>,
-    pub inc: Option<Vec<String>>
+    pub include: Option<Vec<String>>
 }

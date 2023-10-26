@@ -2,6 +2,6 @@
 name = "whisk-test"
 
 [profile]
-cxx = "g++"
+compiler = "g++"
 src = [ "src/**/*.cpp" ]
-inc = [ "inc/*" ]
+include = [ "inc", "src" ]

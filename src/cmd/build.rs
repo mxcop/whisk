@@ -41,7 +41,7 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
     std::fs::create_dir_all("./bin/").unwrap();
 
     // Create the compile command.
-    let compiler = project_cfg.profile.cxx.unwrap_or("g++".to_owned());
+    let compiler = project_cfg.profile.compiler.unwrap_or("g++".to_owned());
     let mut cmd = Command::new(&compiler);
 
     // Add compiler arguments.
@@ -50,9 +50,13 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
     cmd.arg("-o");
     cmd.arg(Path::new("./bin/").join(&project_cfg.package.name));
 
-    if let Some(include_dirs) = project_cfg.profile.inc {
-        cmd.arg("-I");
-        cmd.args(get_dirs(&include_dirs)?);
+    // Add include directories.
+    if let Some(include_dirs) = project_cfg.profile.include {
+        let includes = get_dirs(&include_dirs)?;
+        for include in includes {
+            cmd.arg("-I");
+            cmd.arg(include);
+        }
     }
 
     spinner.clear();

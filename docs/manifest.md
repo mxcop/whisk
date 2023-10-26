@@ -22,15 +22,10 @@ The first section in a `mix.toml` is `[package]`.
 
 ```toml
 [package]
-name = "hello_world" # the name of the package
-version = "0.1.0"    # the current version, obeying semver
-authors = ["Alice <a@example.com>", "Bob <b@example.com>"]
+name = "hello_world" # the name of the package (and binary)
 ```
 
-The only fields required by Cargo are [`name`](#the-name-field) and
-[`version`](#the-version-field). If publishing to a registry, the registry may
-require additional fields. See the notes below and [the publishing
-chapter][publishing] for requirements for publishing to [crates.io].
+The only field required by Whisk is [`name`](#the-name-field).
 
 ### The `name` field
 
