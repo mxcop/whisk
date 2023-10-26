@@ -2,6 +2,7 @@
 
 # test binaries
 /test/bin
+/test/target
 
 # local utils
 pack.bat

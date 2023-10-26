@@ -1,11 +1,13 @@
-use std::{path::{PathBuf, Path}, process::Command};
+use std::path::PathBuf;
 
 use anstyle::{Style, AnsiColor};
 use clap::ArgMatches;
 use spinoff::Spinner;
-use crate::{cfg::ProConfig, werror, file::walk::{get_files, get_dirs}};
+use crate::{cfg::ProConfig, werror};
 
 use super::result::CmdResult;
+
+mod compile;
 
 /// Build a mix C/C++ project.
 pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
@@ -28,68 +30,24 @@ pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
         let abs_str = std::fs::canonicalize(&path).unwrap().to_string_lossy().to_string();
         let abs_path = abs_str.trim_start_matches("\\\\?\\"); // Remove Windows prefix
 
-        println!("{}Parsing{}   ~ {}{}{} {}({}){}", 
+        println!("{}Compiling{}   ~ {}{}{} {}({}){}", 
             mag_style.render(), mag_style.render_reset(), 
             grn_style.render(), &project_cfg.package.name, grn_style.render_reset(), 
             dimmed.render(), abs_path, dimmed.render_reset());
     }
     
-    let mut spinner = Spinner::new(spinoff::spinners::Dots, "Parsing...", spinoff::Color::Magenta);
-
-    // TODO: improve error handling here!
-    std::env::set_current_dir(path).unwrap();
-    std::fs::create_dir_all("./bin/").unwrap();
-
-    // Create the compile command.
-    let compiler = project_cfg.profile.compiler.unwrap_or("g++".to_owned());
-    let mut cmd = Command::new(&compiler);
-
-    // Add compiler arguments.
-    cmd.args(get_files(&project_cfg.profile.src)?);
-
-    cmd.arg("-o");
-    cmd.arg(Path::new("./bin/").join(&project_cfg.package.name));
-
-    // Add include directories.
-    if let Some(include_dirs) = project_cfg.profile.include {
-        let includes = get_dirs(&include_dirs)?;
-        for include in includes {
-            cmd.arg("-I");
-            cmd.arg(include);
-        }
-    }
-
-    spinner.clear();
-    { // Pretty print.
-        println!("{}Compiling{} ~ {}{}{} {}({}){}", 
-            mag_style.render(), mag_style.render_reset(), 
-            grn_style.render(), &project_cfg.package.name, grn_style.render_reset(), 
-            dimmed.render(), compiler, dimmed.render_reset());
-    }
-    spinner = Spinner::new(spinoff::spinners::Dots, "Compiling...", spinoff::Color::Magenta);
+    let mut spinner = Spinner::new(spinoff::spinners::Dots, "Compiling...", spinoff::Color::Magenta);
 
     // Compilation timer.
     let timer = std::time::SystemTime::now();
 
     // Execute the compiler.
-    let process = cmd.spawn().expect("failed to spawn compiler");
-    let _ = process.wait_with_output();
+    compile::compile(path, project_cfg)?;
 
     // Record compile time.
     let time = timer.elapsed().unwrap().as_millis();
 
-    // std::thread::sleep(std::time::Duration::from_millis(3000));
-
     spinner.success(&format!("Compilation finished in {}ms!", time));
-
-    // { // Pretty print.
-    //     let abs_str = std::fs::canonicalize(Path::new("./bin/")).unwrap().to_string_lossy().to_string();
-    //     let abs_path = abs_str.trim_start_matches("\\\\?\\"); // Remove Windows prefix
-
-    //     println!("\n{}Output dir{} : ({})", 
-    //         grn_style.render(), grn_style.render_reset(), 
-    //         abs_path);
-    // }
 
     Ok(())
 }
