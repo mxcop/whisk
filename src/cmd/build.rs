@@ -1,53 +1,60 @@
 use std::path::PathBuf;
 
-use anstyle::{Style, AnsiColor};
 use clap::ArgMatches;
-use spinoff::Spinner;
 use crate::{cfg::ProConfig, werror};
 
 use super::result::CmdResult;
 
-mod compile;
+mod preprocess;
+mod assemble;
+mod link;
+// mod compile;
 
 /// Build a mix C/C++ project.
-pub(crate) fn build(args: &ArgMatches) -> CmdResult<()> {
+pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
-    let path = args.get_one::<PathBuf>("path").expect("Missing server name in `new` command.");
+    let pwd = args.get_one::<PathBuf>("path").expect("Missing server name in `new` command.");
 
     // Read project config file.
-    let toml_path = path.join("whisk.toml");
+    let toml_path = pwd.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
-        return Err(werror!("`whisk.toml` not found in `{}`", path.to_str().unwrap_or("-")));
+        return Err(werror!("`whisk.toml` not found in `{}`", pwd.to_str().unwrap_or("-")));
     };
 
     // Parse project config file.
-    let project_cfg: ProConfig = toml::from_str(&toml).unwrap();
-    let mag_style = Style::new().fg_color(Some(AnsiColor::BrightMagenta.into()));
-    let grn_style = Style::new().fg_color(Some(AnsiColor::BrightGreen.into()));
-    let dimmed = Style::new().dimmed();
+    let cfg: ProConfig = toml::from_str(&toml).unwrap();
 
-    { // Pretty print.
-        let abs_str = std::fs::canonicalize(&path).unwrap().to_string_lossy().to_string();
-        let abs_path = abs_str.trim_start_matches("\\\\?\\"); // Remove Windows prefix
+    // TODO: change this default...
+    let compiler = cfg.profile.compiler.clone().unwrap_or("g++".into());
 
-        println!("{}Compiling{}   ~ {}{}{} {}({}){}", 
-            mag_style.render(), mag_style.render_reset(), 
-            grn_style.render(), &project_cfg.package.name, grn_style.render_reset(), 
-            dimmed.render(), abs_path, dimmed.render_reset());
+    // Gather the project files.
+    let src_files = cfg.profile.source_args(&pwd)?;
+    let inc_files = cfg.profile.include_args(&pwd)?;
+
+    //--------------------------//
+    //  [stage] Pre-processing  //
+    //--------------------------//
+    let pre_files = preprocess::preprocess(pwd, &compiler, src_files.clone(), &inc_files)?;
+
+    let out_file = pwd.join(format!("./bin/{}.exe", &cfg.package.name));
+
+    // Exit if no files were modified.
+    if out_file.exists() && pre_files.is_empty() {
+        println!("No changes.");
+        return Ok(());
     }
+
+    //--------------------------//
+    //  [stage] Assembling      //
+    //--------------------------//
+    assemble::assemble(pwd, &compiler, pre_files)?;
+
+    //--------------------------//
+    //  [stage] Linking         //
+    //--------------------------//
+    link::link(pwd, &compiler, src_files, &cfg.package.name)?;
+
+    println!("Finished!");
     
-    let mut spinner = Spinner::new(spinoff::spinners::Dots, "Compiling...", spinoff::Color::Magenta);
-
-    // Compilation timer.
-    let timer = std::time::SystemTime::now();
-
-    // Execute the compiler.
-    compile::compile(path, project_cfg)?;
-
-    // Record compile time.
-    let time = timer.elapsed().unwrap().as_millis();
-
-    spinner.success(&format!("Compilation finished in {}ms!", time));
-
     Ok(())
 }

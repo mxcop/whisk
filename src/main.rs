@@ -1,6 +1,7 @@
 mod args;
 mod cfg;
 
+// mod term;
 mod file;
 mod cmd;
 

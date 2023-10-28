@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::{cmd::result::CmdResult, werror};
 
 /// Get all files from a list of file match patterns within the working directory.
-pub(crate) fn get_files(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> {
+pub fn get_files(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> {
     let mut files = Vec::<PathBuf>::with_capacity(64);
 
     // Go through all file patterns and collect the files into a vector.
@@ -31,14 +31,14 @@ pub(crate) fn get_files(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<Pa
 }
 
 /// Get all directories from a list of file match patterns within the working directory.
-pub(crate) fn get_dirs(patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> {
+pub fn get_dirs(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> {
     let mut files = Vec::<PathBuf>::with_capacity(64);
 
     // Go through all file patterns and collect the files into a vector.
     for pattern in patterns {
         // Ignore wacky patterns.
         let pattern = pattern.trim_end_matches("*").trim_end_matches("**/");
-        files.push(PathBuf::from(pattern));
+        files.push(p.join(pattern));
     }
 
     Ok(files)

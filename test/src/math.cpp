@@ -1,5 +1,5 @@
 #include "math.h"
 
-int add(int a, int b) {
+int add_n(int a, int b) {
     return a + b;
 }

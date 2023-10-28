@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{arg, Command};
 
 /// Mix CLI clap command.
-pub(crate) fn cli() -> Command {
+pub fn cli() -> Command {
     Command::new("whisk")
         .about("A simplistic build system for C/C++")
         .subcommand_required(true)

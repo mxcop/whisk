@@ -1,6 +1,6 @@
 use std::{process::Command, path::PathBuf, sync::{Mutex, Arc}};
 
-use crate::{cmd::result::CmdResult, cfg::ProConfig, file::walk::{get_files, get_dirs}, werror};
+use crate::{cmd::result::CmdResult, cfg::ProConfig, file::walk::{get_files, get_dirs}, werror, term::CompileTUI};
 
 /// Assemble all source files into object files.
 fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
@@ -13,7 +13,7 @@ fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
 
     // Set the include directories.
     if let Some(include_dirs) = cfg.profile.include {
-        let includes = get_dirs(&include_dirs)?;
+        let includes = get_dirs(p, &include_dirs)?;
         for include in includes {
             args.push("-I".to_owned());
             args.push(p.join(include).to_string_lossy().to_string());
@@ -31,6 +31,8 @@ fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
     let files = get_files(p, &cfg.profile.src)?;
     let output: Arc<Mutex<Vec<PathBuf>>> = Arc::new(Mutex::new(Vec::with_capacity(32)));
 
+    let tui = Arc::new(CompileTUI::new(&cfg.package.name, files.len() as u32));
+
     let mut id = 0u32;
     let mut threads = Vec::new();
     for file in files {
@@ -38,6 +40,7 @@ fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
         let args = args.clone();
         let out_dir = out_dir.clone();
         let output = output.clone();
+        let tui = tui.clone();
 
         // Create a new thread for compiling.
         let handle = std::thread::spawn(move || {
@@ -56,14 +59,21 @@ fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
 
             // Spawn process.
             cmd.arg(&file);
+            let timer = std::time::SystemTime::now();
             let Ok(mut process) = cmd.spawn() else {
                 return Err(werror!("Failed to spawn compiler process"));
             };
+
+            tui.add_file(&file_name.to_string_lossy().to_string());
 
             // Wait for process to finish.
             let Ok(status) = process.wait() else {
                 return Err(werror!("Failed to get compiler process exit status"));
             };
+            let time = timer.elapsed().unwrap().as_millis();
+            println!("Compiled {} in {}ms", &file_name.to_string_lossy().to_string(), time);
+
+            // std::thread::sleep(std::time::Duration::from_secs(2));
 
             if !status.success() {
                 return Err(werror!("Error while compiling `{}`", file.to_string_lossy()));
@@ -75,17 +85,23 @@ fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
             } else {
                 return Err(werror!("Failed to save output file path"));
             }
-            println!("Build `{}` succesfully!", file.to_string_lossy());
+
+            tui.set_file(&file_name.to_string_lossy().to_string(), crate::term::CompileStatus::Done);
 
             Ok(())
         });
         threads.push(handle);
+        //std::thread::sleep(std::time::Duration::from_millis(500));
         id += 1;
     }
 
     for handle in threads {
         handle.join().unwrap()?;
     }
+
+    //std::thread::sleep(std::time::Duration::from_secs(2));
+
+    Arc::try_unwrap(tui).unwrap().stop();
 
     // Save the output file path.
     if let Ok(outputs) = Arc::try_unwrap(output).unwrap().into_inner() {
@@ -96,7 +112,7 @@ fn assemble(p: &PathBuf, cfg: ProConfig) -> CmdResult<Vec<PathBuf>> {
 }
 
 /// Assemble the source files seperately and then link them together.
-pub(crate) fn compile(p: &PathBuf, cfg: ProConfig) -> CmdResult<()> {
+pub fn compile(p: &PathBuf, cfg: ProConfig) -> CmdResult<()> {
     let cfg_clone = cfg.clone();
 
     // Create the link command.

@@ -7,7 +7,7 @@ use crate::{werror, cfg::ProConfig};
 use super::{result::CmdResult, build};
 
 /// Build & run a mix C/C++ project.
-pub(crate) fn run(args: &ArgMatches) -> CmdResult<()> {
+pub fn run(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let path = args.get_one::<PathBuf>("path").expect("Missing server name in `new` command.");
     
