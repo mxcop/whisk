@@ -25,4 +25,10 @@ pub fn cli() -> Command {
                 .arg(arg!(path: <PATH> "Project path").required(false)
                     .value_parser(clap::value_parser!(PathBuf)).default_value("."))
         )
+        .subcommand(
+            Command::new("clean")
+                .about("Removes the bin directory of a project")
+                .arg(arg!(path: <PATH> "Project path").required(false)
+                    .value_parser(clap::value_parser!(PathBuf)).default_value("."))
+        )
 }

@@ -31,6 +31,8 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let src_files = cfg.profile.source_args(&pwd)?;
     let inc_files = cfg.profile.include_args(&pwd)?;
 
+    let timer = std::time::SystemTime::now();
+
     //--------------------------//
     //  [stage] Pre-processing  //
     //--------------------------//
@@ -40,7 +42,9 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
 
     // Exit if no files were modified.
     if out_file.exists() && pre_files.is_empty() {
-        println!("No changes.");
+        let time = timer.elapsed().unwrap().as_secs_f32();
+        println!("No changes found.");
+        println!("Finished {} target in {:.2}s", &cfg.package.name, time);
         return Ok(());
     }
 
@@ -54,7 +58,8 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     //--------------------------//
     link::link(pwd, &compiler, src_files, &cfg.package.name)?;
 
-    println!("Finished!");
+    let time = timer.elapsed().unwrap().as_secs_f32();
+    println!("Finished {} target in {:.2}s", &cfg.package.name, time);
     
     Ok(())
 }

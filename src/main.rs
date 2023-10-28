@@ -15,6 +15,7 @@ fn main() {
         Some(("new", _matches)) => todo!(),
         Some(("build", matches)) => cmd::build::build(matches),
         Some(("run", matches)) => cmd::run::run(matches),
+        Some(("clean", matches)) => cmd::clean::clean(matches),
         _ => unreachable!(),
     };
 
