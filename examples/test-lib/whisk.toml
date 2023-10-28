@@ -1,0 +1,8 @@
+[package]
+name = "whisk-lib"
+type = "static-lib"
+
+[profile]
+compiler = "g++"
+src = [ "src/math.cpp" ]
+include = [ "inc" ]

@@ -10,16 +10,30 @@ pub struct ProConfig {
     pub profile: Profile
 }
 
+#[derive(Debug, Deserialize, Clone, Default)]
+pub enum PackageType {
+    #[serde(rename = "exe")]
+    #[default]
+    Executable,
+    #[serde(rename = "static-lib")]
+    StaticLib
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Package {
-    pub name: String
+    pub name: String,
+    #[serde(rename = "type")]
+    #[serde(default)] 
+    pub ptype: PackageType
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Profile {
     pub compiler: Option<String>,
     pub src: Vec<String>,
-    pub include: Option<Vec<String>>
+    pub include: Option<Vec<String>>,
+    pub libs: Option<Vec<String>>,
+    pub lib: Option<Vec<String>>
 }
 
 impl Profile {

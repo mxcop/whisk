@@ -1,6 +1,8 @@
 use std::{path::PathBuf, sync::{Arc, Mutex}, process::Command};
 
-use crate::{cmd::result::CmdResult, werror};
+use anstyle::AnsiColor;
+
+use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
 /// ### Preprocessor (-E)
 /// Pre-process all project source files.
@@ -30,13 +32,13 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     let mut id = 0u32;
     let mut threads = Vec::new();
 
-    let timer = std::time::SystemTime::now();
     for file in src {
         let args = args.clone();
         let pre_dir = pre_dir.clone();
         let obj_dir = obj_dir.clone();
         let changed_files = changed_files.clone();
         let compiler = compiler.clone();
+        let pwd = p.clone();
 
         // Create a new thread for compiling.
         let handle = std::thread::spawn(move || {
@@ -68,10 +70,13 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             let Ok(status) = process.wait() else {
                 return Err(werror!("Failed to get preprocessor process exit status"));
             };
-            let time = timer.elapsed().unwrap().as_millis();
-            println!("Preprocessed {} in {}ms", &file_name, time);
+            let time = timer.elapsed().unwrap().as_millis() as u32;
+            
+            let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
+            let full_file_name = file.file_name().unwrap().to_string_lossy().to_string();
 
             if !status.success() {
+                print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
                 return Err(werror!("Error while preprocessing `{}`", file.to_string_lossy()));
             }
 
@@ -79,6 +84,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap().to_string_lossy())).exists() {
                 // Save the changed file.
                 if let Ok(mut guard) = changed_files.lock() {
+                    print_label(AnsiColor::BrightBlue, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                     return Ok(());
                 } else {
@@ -92,10 +98,13 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             if new_file != previous_file {
                 // Save the changed file.
                 if let Ok(mut guard) = changed_files.lock() {
+                    print_label(AnsiColor::BrightBlue, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                 } else {
                     return Err(werror!("Failed to save changed file path"));
                 }
+            } else {
+                print_label(AnsiColor::BrightBlue, "SKIP", &file_path, &full_file_name, None);
             }
 
             Ok(())
@@ -108,9 +117,6 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     for handle in threads {
         handle.join().unwrap()?;
     }
-
-    let time = timer.elapsed().unwrap().as_millis();
-    println!("Preprocessed project in {}ms", time);
 
     // Save the output file path.
     if let Ok(outputs) = Arc::try_unwrap(changed_files).unwrap().into_inner() {

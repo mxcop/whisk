@@ -1,6 +1,8 @@
 use std::{path::PathBuf, process::Command};
 
-use crate::{cmd::result::CmdResult, werror};
+use anstyle::AnsiColor;
+
+use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
 /// ### Assembler (-c)
 /// Assemble all changed files into object files.
@@ -21,6 +23,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
         let compiler = compiler.clone();
         let args = args.clone();
         let out_dir = out_dir.clone();
+        let pwd = p.clone();
 
         // Create a new thread for compiling.
         let handle = std::thread::spawn(move || {
@@ -47,12 +50,17 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
             let Ok(status) = process.wait() else {
                 return Err(werror!("Failed to get compiler process exit status"));
             };
-            let time = timer.elapsed().unwrap().as_millis();
-            println!("Assembled {} in {}ms", &file_name.to_string_lossy().to_string(), time);
+            let time = timer.elapsed().unwrap().as_millis() as u32;
+
+            let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
+            let full_file_name = file.file_name().unwrap().to_string_lossy().to_string();
 
             if !status.success() {
+                print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
                 return Err(werror!("Error while compiling `{}`", file.to_string_lossy()));
             }
+
+            print_label(AnsiColor::BrightYellow, "DONE", &file_path, &full_file_name, Some(time));
 
             Ok(())
         });

@@ -1,0 +1,9 @@
+[package]
+name = "whisk-test"
+
+[profile]
+compiler = "g++"
+src = [ "src/**/*.cpp" ]
+include = [ "inc", "lib/whisk-lib/include" ]
+libs = [ "lib/whisk-lib" ]
+lib = [ "whisk" ]

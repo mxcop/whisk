@@ -1,8 +1,7 @@
 /target
 
 # test binaries
-/test/bin
-/test/target
+/examples/**/bin
 
 # local utils
 pack.bat
