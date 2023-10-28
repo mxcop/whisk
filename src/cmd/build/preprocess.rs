@@ -84,7 +84,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap().to_string_lossy())).exists() {
                 // Save the changed file.
                 if let Ok(mut guard) = changed_files.lock() {
-                    print_label(AnsiColor::BrightBlue, "DONE", &file_path, &full_file_name, Some(time));
+                    print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                     return Ok(());
                 } else {
@@ -98,13 +98,13 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             if new_file != previous_file {
                 // Save the changed file.
                 if let Ok(mut guard) = changed_files.lock() {
-                    print_label(AnsiColor::BrightBlue, "DONE", &file_path, &full_file_name, Some(time));
+                    print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                 } else {
                     return Err(werror!("Failed to save changed file path"));
                 }
             } else {
-                print_label(AnsiColor::BrightBlue, "SKIP", &file_path, &full_file_name, None);
+                print_label(AnsiColor::BrightCyan, "SKIP", &file_path, &full_file_name, None);
             }
 
             Ok(())

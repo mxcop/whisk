@@ -36,9 +36,9 @@ pub fn print_status(color: AnsiColor, label: &str, status: &str, ctx: Option<&st
 
 /// Print a label line.
 pub fn print_label(color: AnsiColor, label: &str, path: &PathBuf, file_name: &String, time: Option<u32>) {
-    let label_style = Style::new().bg_color(Some(color.into())).fg_color(Some(AnsiColor::BrightWhite.into())).bold();
+    let label_style = Style::new().fg_color(Some(color.into())).bold();
 
-    print!("{} {} {}",
+    print!("  {}{}{}",
         label_style.render(),
         label,
         label_style.render_reset()

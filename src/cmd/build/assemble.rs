@@ -60,7 +60,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
                 return Err(werror!("Error while compiling `{}`", file.to_string_lossy()));
             }
 
-            print_label(AnsiColor::BrightYellow, "DONE", &file_path, &full_file_name, Some(time));
+            print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
 
             Ok(())
         });

@@ -47,6 +47,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Exit if no files were modified.
     if out_file.exists() && pre_files.is_empty() {
         let time = timer.elapsed().unwrap().as_secs_f32();
+        println!();
         print_status(AnsiColor::BrightCyan, "~ No changes", &cfg.package.name, Some(&format!("{:.2}s", time)));
         return Ok(());
     }
