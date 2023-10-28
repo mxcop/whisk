@@ -20,7 +20,7 @@ macro_rules! printd {
 pub fn print_status(color: AnsiColor, label: &str, status: &str, ctx: Option<&str>) {
     let label_style = Style::new().fg_color(Some(color.into())).bold();
 
-    print!("{}{}{}",
+    print!("~ {}{}{}",
         label_style.render(),
         label,
         label_style.render_reset()
@@ -44,7 +44,7 @@ pub fn print_label(color: AnsiColor, label: &str, path: &PathBuf, file_name: &St
         label_style.render_reset()
     );
 
-    printd!(" {}/", path.to_string_lossy().replace("\\", "/"));
+    printd!(" {}/", path.to_string_lossy().replace("/", "\\"));
 
     print!("{file_name}");
 

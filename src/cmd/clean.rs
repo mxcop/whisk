@@ -1,15 +1,16 @@
 use std::path::PathBuf;
 
+use anstyle::AnsiColor;
 use clap::ArgMatches;
 
-use crate::werror;
+use crate::{werror, term::color::print_status};
 
 use super::result::CmdResult;
 
 /// Clean a whisk C/C++ project.
 pub fn clean(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
-    let pwd = args.get_one::<PathBuf>("path").expect("Missing server name in `new` command.");
+    let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `clean` command.");
 
     let timer = std::time::SystemTime::now();
 
@@ -18,7 +19,7 @@ pub fn clean(args: &ArgMatches) -> CmdResult<()> {
     }
 
     let time = timer.elapsed().unwrap().as_secs_f32();
-    println!("Cleaning finished in {:.2}s", time);
+    print_status(AnsiColor::BrightGreen, "Cleaned", &format!("in {:.2}s", time), None);
     
     Ok(())
 }
