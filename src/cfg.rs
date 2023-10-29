@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
-use crate::{file::walk::{get_dirs, get_files}, cmd::result::CmdResult};
+use crate::{cmd::result::CmdResult, files::{get_files, get_dirs}};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ProConfig {

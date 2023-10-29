@@ -1,8 +1,8 @@
 mod args;
 mod cfg;
 
+mod files;
 mod term;
-mod file;
 mod cmd;
 
 fn main() {
