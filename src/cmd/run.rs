@@ -6,7 +6,7 @@ use crate::{werror, cfg::{ProConfig, PackageType}, term::color::print_status};
 
 use super::{result::{CmdResult, toml_result}, build};
 
-/// Build & run a mix C/C++ project.
+/// Build & run a whisk project.
 pub fn run(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `run` command.");

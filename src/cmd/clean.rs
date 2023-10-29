@@ -7,7 +7,7 @@ use crate::{werror, term::color::print_status};
 
 use super::result::CmdResult;
 
-/// Clean a whisk C/C++ project.
+/// Clean a whisk project.
 pub fn clean(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `clean` command.");

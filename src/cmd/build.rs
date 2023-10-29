@@ -2,16 +2,14 @@ use std::{path::PathBuf, fs::canonicalize};
 
 use anstyle::AnsiColor;
 use clap::ArgMatches;
-use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status, cmd::result::toml_result};
-
-use super::result::CmdResult;
+use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status, cmd::result::{CmdResult, toml_result}};
 
 mod preprocess;
 mod assemble;
 mod link;
 mod archive;
 
-/// Build a mix C/C++ project.
+/// Build a whisk project.
 pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `build` command.");
