@@ -21,7 +21,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Read project config file.
     let toml_path = pwd.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
-        return Err(werror!("`whisk.toml` not found in `{}`", pwd.to_str().unwrap_or("-")));
+        return Err(werror!("filesystem", "`whisk.toml` not found in `{}`", pwd.to_str().unwrap_or("-")));
     };
 
     // Parse project config file.
