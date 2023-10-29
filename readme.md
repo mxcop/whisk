@@ -1,5 +1,7 @@
 # Whisk<sub>*(ey)*</sub> ~ build system
 A simplistic build system for `C` and `C++` projects inspired by `cargo` and `npm`.
+> **Warning**
+> This is an experimental project in an early state of development. (*don't expect too much :p*)
 
 ## Installing
 *wip*: atm the only way to install `whisk` is by cloning this repo and running `cargo install --path .`
