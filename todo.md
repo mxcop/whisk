@@ -10,6 +10,7 @@
 - [ ] `xargs` field in manifest for manually specifying compiler arguments.
 - [ ] Warning & Error related options in manifest file. (`-Wall`, etc)
 - [ ] `whisk new` Creates a new whisk project.
+- [ ] Manifest file build targets (win, linux, macos) (arm, x86) (32-bit, 64-bit)
 
 ## Features <sup>`nice2have`</sup>
 - [ ] `whisk upload` Calls `whisk package` and then runs a script with env variable for the package location.
