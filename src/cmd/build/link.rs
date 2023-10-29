@@ -13,7 +13,7 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
     // Create output directory.
     let out_dir = p.join("./bin/");
     if std::fs::create_dir_all(&out_dir).is_err() {
-        return Err(werror!("[Linking] Failed to create output directory."));
+        return Err(werror!("linker", "failed to create output directory."));
     }
     cmd.arg("-o");
     cmd.arg(out_dir.join(pname));
@@ -43,18 +43,18 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
 
     // Spawn the process.
     let Ok(mut process) = cmd.spawn() else {
-        return Err(werror!("[Linking] Failed to spawn linker process."));
+        return Err(werror!("linker", "failed to spawn linker process."));
     };
 
     // Wait for process to finish.
     let Ok(status) = process.wait() else {
-        return Err(werror!("[Linking] Failed to get linker process exit status."));
+        return Err(werror!("linker", "failed to get linker process exit status."));
     };
 
     if !status.success() {
         print_label(AnsiColor::BrightRed, "ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
-        return Err(werror!("[Linking] Error while linking!"));
+        return Err(werror!("linker", "error while linking!"));
     }
 
     Ok(())

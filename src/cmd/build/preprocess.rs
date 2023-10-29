@@ -23,7 +23,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     // Create output directory.
     let pre_dir = p.join("./bin/pre/");
     if std::fs::create_dir_all(&pre_dir).is_err() {
-        return Err(werror!("[Preprocessing] Failed to create pre-processing output directory."));
+        return Err(werror!("preprocess", "failed to create pre-processing output directory."));
     }
     let obj_dir = p.join("./bin/obj/");
 
@@ -49,7 +49,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             cmd.args(args.iter());
 
             let Some(file_name) = file.file_stem().map(|stem| stem.to_string_lossy()) else {
-                return Err(werror!("[Preprocessing] Not a source file `{}`.", file.to_string_lossy()));
+                return Err(werror!("preprocess", "not a source file `{}`.", file.to_string_lossy()));
             };
 
             cmd.arg("-o");
@@ -63,13 +63,13 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             // Spawn process.
             cmd.arg(&file);
             let Ok(mut process) = cmd.spawn() else {
-                return Err(werror!("[Preprocessing] Failed to spawn preprocessor process."));
+                return Err(werror!("preprocess", "failed to spawn preprocessor process."));
             };
             let timer = std::time::SystemTime::now();
 
             // Wait for process to finish.
             let Ok(status) = process.wait() else {
-                return Err(werror!("[Preprocessing] Failed to get preprocessor process exit status."));
+                return Err(werror!("preprocess", "failed to get preprocessor process exit status."));
             };
             let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
             
@@ -78,7 +78,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
 
             if !status.success() {
                 print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
-                return Err(werror!("[Preprocessing] Error while preprocessing `{}`.", file.to_string_lossy()));
+                return Err(werror!("preprocess", "Failed to process `{}`.", file.to_string_lossy()));
             }
 
             // Check if the associated object file exists.
@@ -89,7 +89,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
                     guard.push(out_file);
                     return Ok(());
                 } else {
-                    return Err(werror!("[Preprocessing] Failed to save changed file path."));
+                    return Err(werror!("preprocess", "failed to save changed file path."));
                 }
             }
 
@@ -102,7 +102,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
                     print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                 } else {
-                    return Err(werror!("[Preprocessing] Failed to save changed file path."));
+                    return Err(werror!("preprocess", "failed to save changed file path."));
                 }
             } else {
                 print_label(AnsiColor::BrightCyan, "SKIP", &file_path, &full_file_name, None);
@@ -116,17 +116,17 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     }
 
     for handle in threads {
-        handle.join().expect("[Preprocessing] Fatal error, failed to join thread!")?;
+        handle.join().expect("[Preprocessing] fatal error, failed to join thread!")?;
     }
 
     let Ok(mutex) = Arc::try_unwrap(changed_files) else {
-        return Err(werror!("[Preprocessing] Failed to unwrap atomic reference counter."));
+        return Err(werror!("preprocess", "failed to unwrap atomic reference counter."));
     };
 
     // Save the output file path.
     if let Ok(outputs) = mutex.into_inner() {
         Ok(outputs)
     } else {
-        Err(werror!("[Preprocessing] Failed to get inner value of mutex."))
+        Err(werror!("preprocess", "failed to get inner value of mutex."))
     }
 }

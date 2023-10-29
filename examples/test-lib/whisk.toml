@@ -1,6 +1,6 @@
 [package]
 name = "whisk-lib"
-type = "static-lib"
+type = "lib"
 
 [profile]
 compiler = "g++"

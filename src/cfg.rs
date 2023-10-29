@@ -10,13 +10,13 @@ pub struct ProConfig {
     pub profile: Profile
 }
 
-#[derive(Debug, Deserialize, Clone, Default)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
 pub enum PackageType {
     #[serde(rename = "exe")]
     #[default]
     Executable,
-    #[serde(rename = "static-lib")]
-    StaticLib
+    #[serde(rename = "lib")]
+    Library
 }
 
 #[derive(Debug, Deserialize, Clone)]

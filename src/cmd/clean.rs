@@ -15,7 +15,7 @@ pub fn clean(args: &ArgMatches) -> CmdResult<()> {
     let timer = std::time::SystemTime::now();
 
     if std::fs::remove_dir_all(pwd.join("./bin/")).is_err() {
-        return Err(werror!("Failed to delete bin directory"));
+        return Err(werror!("clean", "Failed to delete bin directory"));
     }
 
     let time = timer.elapsed().unwrap().as_secs_f32();

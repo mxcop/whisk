@@ -2,7 +2,7 @@ use std::{path::PathBuf, fs::canonicalize};
 
 use anstyle::AnsiColor;
 use clap::ArgMatches;
-use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status};
+use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status, cmd::result::toml_result};
 
 use super::result::CmdResult;
 
@@ -25,7 +25,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     };
 
     // Parse project config file.
-    let cfg: ProConfig = toml::from_str(&toml).unwrap();
+    let cfg: ProConfig = toml_result(toml::from_str(&toml))?;
 
     // TODO: change this default...
     let compiler = cfg.profile.compiler.clone().unwrap_or("g++".into());
@@ -42,7 +42,10 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     print_status(AnsiColor::BrightBlue, "Preprocess", &cfg.package.name, Some(&abs));
     let pre_files = preprocess::preprocess(pwd, &compiler, src_files.clone(), &inc_files)?;
 
-    let out_file = pwd.join(format!("./bin/{}.exe", &cfg.package.name));
+    let out_file = match cfg.package.ptype {
+        PackageType::Executable => pwd.join(format!("./bin/{}.exe", &cfg.package.name)),
+        PackageType::Library => pwd.join(format!("./bin/lib{}.a", &cfg.package.name)),
+    };
 
     // Exit if no files were modified.
     if out_file.exists() && pre_files.is_empty() {
@@ -66,7 +69,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     print_status(AnsiColor::BrightMagenta, "Linking ", &cfg.package.name, Some(&abs));
     match cfg.package.ptype {
         PackageType::Executable => link::link(pwd, &compiler, src_files, &cfg.profile.libs, &cfg.profile.lib, &cfg.package.name)?,
-        PackageType::StaticLib => archive::archive(pwd, src_files, &cfg.package.name)?
+        PackageType::Library => archive::archive(pwd, src_files, &cfg.package.name)?
     };
     
     let time = timer.elapsed().unwrap().as_secs_f32();

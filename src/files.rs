@@ -13,7 +13,7 @@ pub fn get_files(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>>
         // Perform the file glob.
         let paths = match glob::glob(&path) {
             Ok(r) => Ok(r),
-            Err(err) => Err(werror!("Invalid file matching pattern `{}`.\n{}", &pattern, err))
+            Err(err) => Err(werror!("manifest", "invalid file matching pattern `{}`.\n{}", &pattern, err))
         }?;
 
         // Check for errors and push file into files buffer.
@@ -21,7 +21,7 @@ pub fn get_files(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>>
         for path in paths {
             let path = match path {
                 Ok(r) => Ok(r),
-                Err(err) => Err(werror!("File glob error for `{}`.\n{}", &pattern, err))
+                Err(err) => Err(werror!("manifest", "file glob error for `{}`.\n{}", &pattern, err))
             }?;
 
             if path.is_file() {
@@ -32,7 +32,7 @@ pub fn get_files(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>>
 
         // Return error if no paths were looped over.
         if looped == false {
-            return Err(werror!("Source file(s) not found `{}`.", &pattern));
+            return Err(werror!("manifest", "source file(s) not found `{}`.", &pattern));
         }
     }
 
@@ -50,7 +50,7 @@ pub fn get_dirs(p: &PathBuf, patterns: &Vec<String>) -> CmdResult<Vec<PathBuf>> 
         let path = p.join(pattern);
 
         if path.exists() == false {
-            return Err(werror!("Include directory not found `{}`.", pattern));
+            return Err(werror!("manifest", "include directory not found `{}`.", pattern));
         }
 
         files.push(path);

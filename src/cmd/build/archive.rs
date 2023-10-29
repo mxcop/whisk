@@ -14,7 +14,7 @@ pub fn archive(p: &PathBuf, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> 
     // Create output directory.
     let out_dir = p.join("./bin/");
     if std::fs::create_dir_all(&out_dir).is_err() {
-        return Err(werror!("[Linking] Failed to create output directory."));
+        return Err(werror!("archiver", "failed to create output directory."));
     }
     cmd.arg(out_dir.join(format!("lib{}.a", pname)));
 
@@ -29,18 +29,18 @@ pub fn archive(p: &PathBuf, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> 
 
     // Spawn the process.
     let Ok(mut process) = cmd.spawn() else {
-        return Err(werror!("[Linking] Failed to spawn archiver process."));
+        return Err(werror!("archiver", "failed to spawn archiver process."));
     };
 
     // Wait for process to finish.
     let Ok(status) = process.wait() else {
-        return Err(werror!("[Linking] Failed to get archiver process exit status."));
+        return Err(werror!("archiver", "failed to get archiver process exit status."));
     };
 
     if !status.success() {
         print_label(AnsiColor::BrightRed, "ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
-        return Err(werror!("[Linking] Error while archiving static lib."));
+        return Err(werror!("archiver", "error while archiving static lib."));
     }
 
     Ok(())

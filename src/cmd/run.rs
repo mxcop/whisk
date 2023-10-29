@@ -2,9 +2,9 @@ use std::{process::Command, path::PathBuf, fs::canonicalize};
 
 use anstyle::AnsiColor;
 use clap::ArgMatches;
-use crate::{werror, cfg::ProConfig, term::color::print_status};
+use crate::{werror, cfg::{ProConfig, PackageType}, term::color::print_status};
 
-use super::{result::CmdResult, build};
+use super::{result::{CmdResult, toml_result}, build};
 
 /// Build & run a mix C/C++ project.
 pub fn run(args: &ArgMatches) -> CmdResult<()> {
@@ -19,7 +19,13 @@ pub fn run(args: &ArgMatches) -> CmdResult<()> {
     };
 
     // Parse project config file.
-    let cfg: ProConfig = toml::from_str(&toml).unwrap();
+    let cfg: ProConfig = toml_result(toml::from_str(&toml))?;
+
+    // Exit if this is a library.
+    if cfg.package.ptype == PackageType::Library {
+        print_status(AnsiColor::BrightYellow, "Exiting ", &cfg.package.name, Some("cannot run library"));
+        return Ok(());
+    }
 
     // Build the project.
     build::build(args)?;
