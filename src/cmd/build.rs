@@ -9,7 +9,7 @@ use super::result::CmdResult;
 mod preprocess;
 mod assemble;
 mod link;
-// mod compile;
+mod archive;
 
 /// Build a mix C/C++ project.
 pub fn build(args: &ArgMatches) -> CmdResult<()> {
@@ -66,7 +66,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     print_status(AnsiColor::BrightMagenta, "Linking ", &cfg.package.name, Some(&abs));
     match cfg.package.ptype {
         PackageType::Executable => link::link(pwd, &compiler, src_files, &cfg.profile.libs, &cfg.profile.lib, &cfg.package.name)?,
-        PackageType::StaticLib => link::link_slib(pwd, src_files, &cfg.package.name)?
+        PackageType::StaticLib => archive::archive(pwd, src_files, &cfg.package.name)?
     };
     
     let time = timer.elapsed().unwrap().as_secs_f32();

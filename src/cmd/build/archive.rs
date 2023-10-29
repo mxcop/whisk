@@ -4,19 +4,19 @@ use anstyle::AnsiColor;
 
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
-/// ### Linker
-/// Link together the final object files into an executable.
-pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec<String>>, lib: &Option<Vec<String>>, pname: &String) -> CmdResult<()> {
-    // Create the link command.
-    let mut cmd = Command::new(&compiler);
+/// ### Archiver
+/// Create an archive of the final object files. (static library)
+pub fn archive(p: &PathBuf, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> {
+    // Create the archive command.
+    let mut cmd = Command::new("ar");
+    cmd.arg("rcs"); // Flags
 
     // Create output directory.
     let out_dir = p.join("./bin/");
     if std::fs::create_dir_all(&out_dir).is_err() {
         return Err(werror!("[Linking] Failed to create output directory."));
     }
-    cmd.arg("-o");
-    cmd.arg(out_dir.join(pname));
+    cmd.arg(out_dir.join(format!("lib{}.a", pname)));
 
     // Add all the object files.
     let obj_dir = p.join("./bin/obj/");
@@ -27,34 +27,20 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
         id += 1;
     }
 
-    // Add library directories.
-    if let Some(libs) = libs {
-        for lib in libs {
-            cmd.arg(format!("-L{}", p.join(lib).to_string_lossy()));
-        }
-    }
-
-    // Add libraries.
-    if let Some(libs) = lib {
-        for lib in libs {
-            cmd.arg(format!("-l{}", lib));
-        }
-    }
-
     // Spawn the process.
     let Ok(mut process) = cmd.spawn() else {
-        return Err(werror!("[Linking] Failed to spawn linker process."));
+        return Err(werror!("[Linking] Failed to spawn archiver process."));
     };
 
     // Wait for process to finish.
     let Ok(status) = process.wait() else {
-        return Err(werror!("[Linking] Failed to get linker process exit status."));
+        return Err(werror!("[Linking] Failed to get archiver process exit status."));
     };
 
     if !status.success() {
         print_label(AnsiColor::BrightRed, "ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
-        return Err(werror!("[Linking] Error while linking!"));
+        return Err(werror!("[Linking] Error while archiving static lib."));
     }
 
     Ok(())
