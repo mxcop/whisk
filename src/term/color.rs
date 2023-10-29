@@ -44,7 +44,7 @@ pub fn print_label(color: AnsiColor, label: &str, path: &PathBuf, file_name: &St
         label_style.render_reset()
     );
 
-    printd!(" {}/", path.to_string_lossy().replace("/", "\\"));
+    printd!(" {}\\", path.to_string_lossy().replace("/", "\\"));
 
     print!("{file_name}");
 
