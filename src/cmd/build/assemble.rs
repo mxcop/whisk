@@ -15,7 +15,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
     // Create output directory.
     let out_dir = p.join("./bin/obj/");
     if std::fs::create_dir_all(&out_dir).is_err() {
-        return Err(werror!("Failed to create output directory"));
+        return Err(werror!("[Assembling] Failed to create output directory."));
     }
 
     let mut threads = Vec::new();
@@ -32,7 +32,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
             cmd.args(args.iter());
 
             let Some(file_name) = file.file_stem() else {
-                return Err(werror!("Missing file name"));
+                return Err(werror!("[Assembling] Missing file name."));
             };
 
             cmd.arg("-o");
@@ -42,22 +42,27 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
             // Spawn process.
             cmd.arg(&file);
             let Ok(mut process) = cmd.spawn() else {
-                return Err(werror!("Failed to spawn compiler process"));
+                return Err(werror!("[Assembling] Failed to spawn compiler process."));
             };
             let timer = std::time::SystemTime::now();
 
             // Wait for process to finish.
             let Ok(status) = process.wait() else {
-                return Err(werror!("Failed to get compiler process exit status"));
+                return Err(werror!("[Assembling] Failed to get compiler process exit status."));
             };
-            let time = timer.elapsed().unwrap().as_millis() as u32;
+            let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
 
-            let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
-            let full_file_name = file.file_name().unwrap().to_string_lossy().to_string();
+            // Get some logging info.
+            let Some(parent) = file.parent() else {
+                return Err(werror!("[Assembling] Failed to get parent of path `{}`.", file.to_string_lossy()));
+            };
+            let file_path = parent.strip_prefix(&pwd).unwrap_or(parent).to_path_buf();
+            let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
 
+            // Return with error if the compiler returned unsuccessful.
             if !status.success() {
                 print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
-                return Err(werror!("Error while compiling `{}`", file.to_string_lossy()));
+                return Err(werror!("[Assembling] Error while compiling `{}`.", file.to_string_lossy()));
             }
 
             print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
@@ -69,7 +74,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
     }
 
     for handle in threads {
-        handle.join().unwrap()?;
+        handle.join().expect("[Preprocessing] Fatal error, failed to join thread!")?;
     }
 
     Ok(())

@@ -23,7 +23,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     // Create output directory.
     let pre_dir = p.join("./bin/pre/");
     if std::fs::create_dir_all(&pre_dir).is_err() {
-        return Err(werror!("Failed to create pre-processing output directory"));
+        return Err(werror!("[Preprocessing] Failed to create pre-processing output directory."));
     }
     let obj_dir = p.join("./bin/obj/");
 
@@ -43,12 +43,13 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
         // Create a new thread for compiling.
         let handle = std::thread::spawn(move || {
             let uid = id;
+            
             // Create compile command.
             let mut cmd = Command::new(&compiler);
             cmd.args(args.iter());
 
             let Some(file_name) = file.file_stem().map(|stem| stem.to_string_lossy()) else {
-                return Err(werror!("Not a source file `{}`", file.to_string_lossy()));
+                return Err(werror!("[Preprocessing] Not a source file `{}`.", file.to_string_lossy()));
             };
 
             cmd.arg("-o");
@@ -62,33 +63,33 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
             // Spawn process.
             cmd.arg(&file);
             let Ok(mut process) = cmd.spawn() else {
-                return Err(werror!("Failed to spawn preprocessor process"));
+                return Err(werror!("[Preprocessing] Failed to spawn preprocessor process."));
             };
             let timer = std::time::SystemTime::now();
 
             // Wait for process to finish.
             let Ok(status) = process.wait() else {
-                return Err(werror!("Failed to get preprocessor process exit status"));
+                return Err(werror!("[Preprocessing] Failed to get preprocessor process exit status."));
             };
-            let time = timer.elapsed().unwrap().as_millis() as u32;
+            let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
             
             let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
-            let full_file_name = file.file_name().unwrap().to_string_lossy().to_string();
+            let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
 
             if !status.success() {
                 print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
-                return Err(werror!("Error while preprocessing `{}`", file.to_string_lossy()));
+                return Err(werror!("[Preprocessing] Error while preprocessing `{}`.", file.to_string_lossy()));
             }
 
             // Check if the associated object file exists.
-            if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap().to_string_lossy())).exists() {
+            if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap_or_default().to_string_lossy())).exists() {
                 // Save the changed file.
                 if let Ok(mut guard) = changed_files.lock() {
                     print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                     return Ok(());
                 } else {
-                    return Err(werror!("Failed to save changed file path"));
+                    return Err(werror!("[Preprocessing] Failed to save changed file path."));
                 }
             }
 
@@ -101,7 +102,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
                     print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
                     guard.push(out_file);
                 } else {
-                    return Err(werror!("Failed to save changed file path"));
+                    return Err(werror!("[Preprocessing] Failed to save changed file path."));
                 }
             } else {
                 print_label(AnsiColor::BrightCyan, "SKIP", &file_path, &full_file_name, None);
@@ -115,13 +116,17 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     }
 
     for handle in threads {
-        handle.join().unwrap()?;
+        handle.join().expect("[Preprocessing] Fatal error, failed to join thread!")?;
     }
 
+    let Ok(mutex) = Arc::try_unwrap(changed_files) else {
+        return Err(werror!("[Preprocessing] Failed to unwrap atomic reference counter."));
+    };
+
     // Save the output file path.
-    if let Ok(outputs) = Arc::try_unwrap(changed_files).unwrap().into_inner() {
+    if let Ok(outputs) = mutex.into_inner() {
         Ok(outputs)
     } else {
-        Err(werror!("Failed to save output file path"))
+        Err(werror!("[Preprocessing] Failed to get inner value of mutex."))
     }
 }
