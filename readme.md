@@ -1,3 +1,5 @@
+<img src=".github/whisk-banner.png" />
+
 # Whisk<sub>*(ey)*</sub> ~ build system
 A simplistic build system for `C` and `C++` projects inspired by `cargo` and `npm`.
 > **Warning**
