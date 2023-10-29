@@ -2,6 +2,8 @@ use std::{path::PathBuf, process::Command};
 
 use anstyle::AnsiColor;
 
+use crate::gcc::msg::CompilerOutput;
+use crate::regex;
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
 /// ### Assembler (-c)
@@ -41,22 +43,32 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
 
             // Spawn process.
             cmd.arg(&file);
-            let Ok(mut process) = cmd.spawn() else {
+            let timer = std::time::SystemTime::now();
+            let Ok(output) = cmd.output() else {
                 return Err(werror!("Failed to spawn compiler process"));
             };
-            let timer = std::time::SystemTime::now();
-
+            
             // Wait for process to finish.
-            let Ok(status) = process.wait() else {
-                return Err(werror!("Failed to get compiler process exit status"));
-            };
+            // let Ok(output) = process.wait_with_output() else {
+            //     return Err(werror!("Failed to get compiler process exit status"));
+            // };
             let time = timer.elapsed().unwrap().as_millis() as u32;
 
             let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
             let full_file_name = file.file_name().unwrap().to_string_lossy().to_string();
 
-            if !status.success() {
+            if !output.status.success() {
                 print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
+
+                // let deep_regex = regex!(r"/([^:^\n]+):(\d+):(\d+):\s(\w+\s*\w*):\s(.+)\n(\s+)\d*\s*[|]*\s*(.*)\s+[|]*\s*\^+/gm");
+                let simple_regex = regex!(r"([\w.]*?):.*?'(.*?)':.*?[\r\n](.*?):(\d*?):(\d*?): (.*?): (.*)[\r\n](.*)[\r\n](.*)");
+
+                let mut stderr = String::from_utf8(output.stderr.clone()).unwrap();
+                stderr.push_str(&stderr.clone());
+                
+                let out: CompilerOutput = simple_regex.captures_iter(&stderr).into();
+                dbg!(out);
+
                 return Err(werror!("Error while compiling `{}`", file.to_string_lossy()));
             }
 

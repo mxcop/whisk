@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use anstyle::{Style, AnsiColor};
 
+use crate::regex;
+
 /// Whisk print dimmed macro. (use same as [std::format])
 #[macro_export]
 macro_rules! printd {
@@ -52,4 +54,10 @@ pub fn print_label(color: AnsiColor, label: &str, path: &PathBuf, file_name: &St
         printd!(" ({}ms)", time);
     }
     println!();
+}
+
+/// Print compiler output.
+pub fn print_cout() {
+    let deep_regex = regex!(r"/([^:^\n]+):(\d+):(\d+):\s(\w+\s*\w*):\s(.+)\n(\s+)\d*\s*[|]*\s*(.*)\s+[|]*\s*\^+/gm");
+    let simple_regex = regex!(r"/([^:^\n]+):(\d+):(\d+):\s(\w+\s*\w*):\s(.+)\n(?!\s)/gm");
 }

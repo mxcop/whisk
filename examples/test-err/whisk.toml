@@ -1,0 +1,7 @@
+[package]
+name = "whisk-test-err"
+
+[profile]
+compiler = "g++"
+src = [ "src/**/*.cpp" ]
+include = [ "inc", "src" ]

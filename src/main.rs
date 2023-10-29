@@ -1,6 +1,7 @@
 mod args;
 mod cfg;
 
+mod gcc;
 mod term;
 mod file;
 mod cmd;

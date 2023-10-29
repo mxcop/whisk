@@ -5,6 +5,7 @@
 // use stream::Streams;
 
 // mod stream;
+pub mod regex;
 pub mod color;
 
 // #[derive(Debug, PartialEq)]
