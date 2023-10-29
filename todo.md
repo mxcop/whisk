@@ -9,6 +9,7 @@
 - [ ] `prebuild` & `postbuild` fields in manifest to run scripts before and after a build.
 - [ ] `xargs` field in manifest for manually specifying compiler arguments.
 - [ ] Warning & Error related options in manifest file. (`-Wall`, etc)
+- [ ] `whisk new` Creates a new whisk project.
 
 ## Features <sup>`nice2have`</sup>
 - [ ] `whisk upload` Calls `whisk package` and then runs a script with env variable for the package location.
