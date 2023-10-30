@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
-use anstyle::AnsiColor;
+use owo_colors::colors::BrightRed;
 
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
@@ -38,7 +38,7 @@ pub fn archive(p: &PathBuf, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> 
     };
 
     if !status.success() {
-        print_label(AnsiColor::BrightRed, "ERROR", &obj_dir, &pname, None);
+        print_label::<BrightRed>("ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
         return Err(werror!("archiver", "error while archiving static lib."));
     }

@@ -1,7 +1,7 @@
 use std::{process::Command, path::PathBuf, fs::canonicalize};
 
-use anstyle::AnsiColor;
 use clap::ArgMatches;
+use owo_colors::colors::{BrightYellow, BrightGreen};
 use crate::{werror, cfg::{ProConfig, PackageType}, term::color::print_status};
 
 use super::{result::{CmdResult, toml_result}, build};
@@ -23,7 +23,7 @@ pub fn run(args: &ArgMatches) -> CmdResult<()> {
 
     // Exit if this is a library.
     if cfg.package.ptype == PackageType::Library {
-        print_status(AnsiColor::BrightYellow, "Exiting ", &cfg.package.name, Some("cannot run library"));
+        print_status::<BrightYellow>("Exiting ", &cfg.package.name, Some("cannot run library"));
         return Ok(());
     }
 
@@ -40,7 +40,7 @@ pub fn run(args: &ArgMatches) -> CmdResult<()> {
     #[cfg(target_os = "windows")]
     abs_bin.push_str(".exe");
 
-    print_status(AnsiColor::BrightGreen, "Running ", &cfg.package.name, Some(&abs_bin));
+    print_status::<BrightGreen>("Running ", &cfg.package.name, Some(&abs_bin));
 
     // Spawn the compiled binary.
     let process = Command::new(bin)

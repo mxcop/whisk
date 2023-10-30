@@ -1,55 +1,33 @@
 use std::path::PathBuf;
 
-use anstyle::{Style, AnsiColor};
-
-/// Whisk print dimmed macro. (use same as [std::format])
-#[macro_export]
-macro_rules! printd {
-    ($fmt_str:literal) => {{
-        let style = anstyle::Style::new().dimmed();
-        print!("{}{}{}", style.render(), $fmt_str, style.render_reset());
-    }};
-
-    ($fmt_str:literal, $($args:expr),*) => {{
-        let style = anstyle::Style::new().dimmed();
-        print!("{}{}{}", style.render(), format!($fmt_str, $($args),*), style.render_reset());
-    }};
-}
+use owo_colors::{OwoColorize, Color};
 
 /// Print a status line.
-pub fn print_status(color: AnsiColor, label: &str, status: &str, ctx: Option<&str>) {
-    let label_style = Style::new().fg_color(Some(color.into())).bold();
-
-    print!("~ {}{}{}",
-        label_style.render(),
-        label,
-        label_style.render_reset()
-    );
-
-    print!(" {}", status);
+pub fn print_status<C>(label: &str, status: &str, ctx: Option<&str>)
+where
+    C: Color,
+{
+    print!("~ {} {}", label.fg::<C>().bold(), status);
 
     if let Some(ctx) = ctx {
-        printd!(" ({})", ctx);
+        print!(" {}", format!("({})", ctx).dimmed());
     }
     println!();
 }
 
 /// Print a label line.
-pub fn print_label(color: AnsiColor, label: &str, path: &PathBuf, file_name: &String, time: Option<u32>) {
-    let label_style = Style::new().fg_color(Some(color.into())).bold();
-
-    print!("  {}{}{}",
-        label_style.render(),
-        label,
-        label_style.render_reset()
+pub fn print_label<C>(label: &str, path: &PathBuf, file_name: &String, time: Option<u32>)
+where
+    C: Color,
+{
+    print!(
+        "  {} {}\\{file_name}",
+        label.fg::<C>().bold(),
+        path.to_string_lossy().replace("/", "\\")
     );
 
-    printd!(" {}\\", path.to_string_lossy().replace("/", "\\"));
-
-    print!("{file_name}");
-
     if let Some(time) = time {
-        printd!(" ({}ms)", time);
+        print!(" {}", format!("({}ms)", time).dimmed());
     }
     println!();
 }

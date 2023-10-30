@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
-use anstyle::AnsiColor;
+use owo_colors::colors::BrightRed;
 
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
@@ -52,7 +52,7 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
     };
 
     if !status.success() {
-        print_label(AnsiColor::BrightRed, "ERROR", &obj_dir, &pname, None);
+        print_label::<BrightRed>("ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
         return Err(werror!("linker", "error while linking!"));
     }

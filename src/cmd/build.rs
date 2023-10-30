@@ -1,7 +1,7 @@
 use std::{path::PathBuf, fs::canonicalize};
 
-use anstyle::AnsiColor;
 use clap::ArgMatches;
+use owo_colors::colors::{BrightBlue, BrightCyan, BrightYellow, BrightMagenta, BrightGreen};
 use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status, cmd::result::{CmdResult, toml_result}};
 
 mod preprocess;
@@ -37,7 +37,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     //--------------------------//
     //  [stage] Pre-processing  //
     //--------------------------//
-    print_status(AnsiColor::BrightBlue, "Preprocess", &cfg.package.name, Some(&abs));
+    print_status::<BrightBlue>("Preprocess", &cfg.package.name, Some(&abs));
     let pre_files = preprocess::preprocess(pwd, &compiler, src_files.clone(), &inc_files)?;
 
     let out_file = match cfg.package.ptype {
@@ -49,7 +49,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     if out_file.exists() && pre_files.is_empty() {
         let time = timer.elapsed().unwrap().as_secs_f32();
         println!();
-        print_status(AnsiColor::BrightCyan, "No changes", &cfg.package.name, Some(&format!("{:.2}s", time)));
+        print_status::<BrightCyan>("No changes", &cfg.package.name, Some(&format!("{:.2}s", time)));
         return Ok(());
     }
 
@@ -57,21 +57,21 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     //  [stage] Assembling      //
     //--------------------------//
     println!();
-    print_status(AnsiColor::BrightYellow, "Assembling", &cfg.package.name, Some(&abs));
+    print_status::<BrightYellow>("Assembling", &cfg.package.name, Some(&abs));
     assemble::assemble(pwd, &compiler, pre_files)?;
 
     //--------------------------//
     //  [stage] Linking         //
     //--------------------------//
     println!();
-    print_status(AnsiColor::BrightMagenta, "Linking ", &cfg.package.name, Some(&abs));
+    print_status::<BrightMagenta>("Linking ", &cfg.package.name, Some(&abs));
     match cfg.package.ptype {
         PackageType::Executable => link::link(pwd, &compiler, src_files, &cfg.profile.libs, &cfg.profile.lib, &cfg.package.name)?,
         PackageType::Library => archive::archive(pwd, src_files, &cfg.package.name)?
     };
     
     let time = timer.elapsed().unwrap().as_secs_f32();
-    print_status(AnsiColor::BrightGreen, "Finished", &cfg.package.name, Some(&format!("{:.2}s", time)));
+    print_status::<BrightGreen>("Finished", &cfg.package.name, Some(&format!("{:.2}s", time)));
     
     Ok(())
 }

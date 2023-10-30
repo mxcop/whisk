@@ -1,6 +1,6 @@
 use std::{path::PathBuf, sync::{Arc, Mutex}, process::Command};
 
-use anstyle::AnsiColor;
+use owo_colors::colors::{BrightRed, BrightGreen, BrightCyan};
 
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
@@ -100,7 +100,7 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
     let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
 
     if !status.success() {
-        print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
+        print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
         return Err(werror!("preprocess", "Failed to process `{}`.", file.to_string_lossy()));
     }
 
@@ -108,7 +108,7 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
     if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap_or_default().to_string_lossy())).exists() {
         // Save the changed file.
         if let Ok(mut guard) = changed_files.lock() {
-            print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
+            print_label::<BrightGreen>("DONE", &file_path, &full_file_name, Some(time));
             guard.push(out_file);
             return Ok(());
         } else {
@@ -122,13 +122,13 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
     if new_file != previous_file {
         // Save the changed file.
         if let Ok(mut guard) = changed_files.lock() {
-            print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
+            print_label::<BrightGreen>("DONE", &file_path, &full_file_name, Some(time));
             guard.push(out_file);
         } else {
             return Err(werror!("preprocess", "failed to save changed file path."));
         }
     } else {
-        print_label(AnsiColor::BrightCyan, "SKIP", &file_path, &full_file_name, None);
+        print_label::<BrightCyan>("SKIP", &file_path, &full_file_name, None);
     }
 
     Ok(())

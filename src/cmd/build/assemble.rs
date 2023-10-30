@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
-use anstyle::AnsiColor;
+use owo_colors::colors::{BrightGreen, BrightRed};
 
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
@@ -77,11 +77,11 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
 
     // Return with error if the compiler returned unsuccessful.
     if !status.success() {
-        print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
+        print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
         return Err(werror!("assembler", "error while compiling `{}`.", file.to_string_lossy()));
     }
 
-    print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
+    print_label::<BrightGreen>("DONE", &file_path, &full_file_name, Some(time));
 
     Ok(())
 }
