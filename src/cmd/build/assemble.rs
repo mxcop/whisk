@@ -25,50 +25,10 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
         let out_dir = out_dir.clone();
         let pwd = p.clone();
 
-        // Create a new thread for compiling.
-        let handle = std::thread::spawn(move || {
-            // Create compile command.
-            let mut cmd = Command::new(&compiler);
-            cmd.args(args.iter());
-
-            let Some(file_name) = file.file_stem() else {
-                return Err(werror!("assembler", "missing file name."));
-            };
-
-            cmd.arg("-o");
-            let out_file = out_dir.join(format!("{}.o", file_name.to_string_lossy()));
-            cmd.arg(&out_file);
-
-            // Spawn process.
-            cmd.arg(&file);
-            let Ok(mut process) = cmd.spawn() else {
-                return Err(werror!("assembler", "failed to spawn compiler process."));
-            };
-            let timer = std::time::SystemTime::now();
-
-            // Wait for process to finish.
-            let Ok(status) = process.wait() else {
-                return Err(werror!("assembler", "failed to get compiler process exit status."));
-            };
-            let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
-
-            // Get some logging info.
-            let Some(parent) = file.parent() else {
-                return Err(werror!("assembler", "failed to get parent of path `{}`.", file.to_string_lossy()));
-            };
-            let file_path = parent.strip_prefix(&pwd).unwrap_or(parent).to_path_buf();
-            let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
-
-            // Return with error if the compiler returned unsuccessful.
-            if !status.success() {
-                print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
-                return Err(werror!("assembler", "error while compiling `{}`.", file.to_string_lossy()));
-            }
-
-            print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
-
-            Ok(())
-        });
+        // Create a new thread for assembling.
+        let handle = std::thread::spawn(
+            move || assembler_thread(pwd, out_dir, file, compiler, args)
+        );
 
         threads.push(handle);
     }
@@ -76,6 +36,52 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
     for handle in threads {
         handle.join().expect("[Preprocessing] Fatal error, failed to join thread!")?;
     }
+
+    Ok(())
+}
+
+/// ### Assembler thread
+/// Thread for processing a single preprocessor file.
+fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: String, args: Vec<String>) -> CmdResult<()> {
+    // Create compile command.
+    let mut cmd = Command::new(&compiler);
+    cmd.args(args.iter());
+
+    let Some(file_name) = file.file_stem() else {
+        return Err(werror!("assembler", "missing file name."));
+    };
+
+    cmd.arg("-o");
+    let out_file = out_dir.join(format!("{}.o", file_name.to_string_lossy()));
+    cmd.arg(&out_file);
+
+    // Spawn process.
+    cmd.arg(&file);
+    let Ok(mut process) = cmd.spawn() else {
+        return Err(werror!("assembler", "failed to spawn compiler process."));
+    };
+    let timer = std::time::SystemTime::now();
+
+    // Wait for process to finish.
+    let Ok(status) = process.wait() else {
+        return Err(werror!("assembler", "failed to get compiler process exit status."));
+    };
+    let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
+
+    // Get some logging info.
+    let Some(parent) = file.parent() else {
+        return Err(werror!("assembler", "failed to get parent of path `{}`.", file.to_string_lossy()));
+    };
+    let file_path = parent.strip_prefix(&pwd).unwrap_or(parent).to_path_buf();
+    let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
+
+    // Return with error if the compiler returned unsuccessful.
+    if !status.success() {
+        print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
+        return Err(werror!("assembler", "error while compiling `{}`.", file.to_string_lossy()));
+    }
+
+    print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
 
     Ok(())
 }

@@ -27,92 +27,27 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     }
     let obj_dir = p.join("./bin/obj/");
 
+    // List of changed files.
     let changed_files: Arc<Mutex<Vec<PathBuf>>> = Arc::new(Mutex::new(Vec::with_capacity(32)));
 
-    let mut id = 0u32;
+    let mut uid = 0u32;
     let mut threads = Vec::new();
 
     for file in src {
-        let args = args.clone();
+        let pwd = p.clone();
         let pre_dir = pre_dir.clone();
         let obj_dir = obj_dir.clone();
-        let changed_files = changed_files.clone();
         let compiler = compiler.clone();
-        let pwd = p.clone();
+        let args = args.clone();
+        let changed_files = Arc::clone(&changed_files);
 
         // Create a new thread for compiling.
-        let handle = std::thread::spawn(move || {
-            let uid = id;
-            
-            // Create compile command.
-            let mut cmd = Command::new(&compiler);
-            cmd.args(args.iter());
-
-            let Some(file_name) = file.file_stem().map(|stem| stem.to_string_lossy()) else {
-                return Err(werror!("preprocess", "not a source file `{}`.", file.to_string_lossy()));
-            };
-
-            cmd.arg("-o");
-            let out_filename = format!("{}_{}.ii", uid, &file_name);
-            let out_file = pre_dir.join(&out_filename);
-            cmd.arg(&out_file);
-
-            // Save the previous output file for comparing later.
-            let previous_file = std::fs::read_to_string(&out_file).unwrap_or_default();
-
-            // Spawn process.
-            cmd.arg(&file);
-            let Ok(mut process) = cmd.spawn() else {
-                return Err(werror!("preprocess", "failed to spawn preprocessor process."));
-            };
-            let timer = std::time::SystemTime::now();
-
-            // Wait for process to finish.
-            let Ok(status) = process.wait() else {
-                return Err(werror!("preprocess", "failed to get preprocessor process exit status."));
-            };
-            let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
-            
-            let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
-            let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
-
-            if !status.success() {
-                print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
-                return Err(werror!("preprocess", "Failed to process `{}`.", file.to_string_lossy()));
-            }
-
-            // Check if the associated object file exists.
-            if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap_or_default().to_string_lossy())).exists() {
-                // Save the changed file.
-                if let Ok(mut guard) = changed_files.lock() {
-                    print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
-                    guard.push(out_file);
-                    return Ok(());
-                } else {
-                    return Err(werror!("preprocess", "failed to save changed file path."));
-                }
-            }
-
-            let new_file = std::fs::read_to_string(&out_file).unwrap_or_default();
-
-            // If the new file is different.
-            if new_file != previous_file {
-                // Save the changed file.
-                if let Ok(mut guard) = changed_files.lock() {
-                    print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
-                    guard.push(out_file);
-                } else {
-                    return Err(werror!("preprocess", "failed to save changed file path."));
-                }
-            } else {
-                print_label(AnsiColor::BrightCyan, "SKIP", &file_path, &full_file_name, None);
-            }
-
-            Ok(())
-        });
+        let handle = std::thread::spawn(
+            move || preprocess_thread(pwd, pre_dir, obj_dir, file, uid, compiler, args, changed_files)
+        );
 
         threads.push(handle);
-        id += 1;
+        uid += 1;
     }
 
     for handle in threads {
@@ -129,4 +64,72 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     } else {
         Err(werror!("preprocess", "failed to get inner value of mutex."))
     }
+}
+
+fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: PathBuf, uid: u32, compiler: String, args: Vec<String>, changed_files: Arc<Mutex<Vec<PathBuf>>>) -> CmdResult<()> {
+    // Create compile command.
+    let mut cmd = Command::new(&compiler);
+    cmd.args(args.iter());
+
+    let Some(file_name) = file.file_stem().map(|stem| stem.to_string_lossy()) else {
+        return Err(werror!("preprocess", "not a source file `{}`.", file.to_string_lossy()));
+    };
+
+    cmd.arg("-o");
+    let out_filename = format!("{}_{}.ii", uid, &file_name);
+    let out_file = pre_dir.join(&out_filename);
+    cmd.arg(&out_file);
+
+    // Save the previous output file for comparing later.
+    let previous_file = std::fs::read_to_string(&out_file).unwrap_or_default();
+
+    // Spawn process.
+    cmd.arg(&file);
+    let Ok(mut process) = cmd.spawn() else {
+        return Err(werror!("preprocess", "failed to spawn preprocessor process."));
+    };
+    let timer = std::time::SystemTime::now();
+
+    // Wait for process to finish.
+    let Ok(status) = process.wait() else {
+        return Err(werror!("preprocess", "failed to get preprocessor process exit status."));
+    };
+    let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
+    
+    let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
+    let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
+
+    if !status.success() {
+        print_label(AnsiColor::BrightRed, "ERROR", &file_path, &full_file_name, None);
+        return Err(werror!("preprocess", "Failed to process `{}`.", file.to_string_lossy()));
+    }
+
+    // Check if the associated object file exists.
+    if !obj_dir.join(format!("{}.o", &out_file.file_stem().unwrap_or_default().to_string_lossy())).exists() {
+        // Save the changed file.
+        if let Ok(mut guard) = changed_files.lock() {
+            print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
+            guard.push(out_file);
+            return Ok(());
+        } else {
+            return Err(werror!("preprocess", "failed to save changed file path."));
+        }
+    }
+
+    let new_file = std::fs::read_to_string(&out_file).unwrap_or_default();
+
+    // If the new file is different.
+    if new_file != previous_file {
+        // Save the changed file.
+        if let Ok(mut guard) = changed_files.lock() {
+            print_label(AnsiColor::BrightGreen, "DONE", &file_path, &full_file_name, Some(time));
+            guard.push(out_file);
+        } else {
+            return Err(werror!("preprocess", "failed to save changed file path."));
+        }
+    } else {
+        print_label(AnsiColor::BrightCyan, "SKIP", &file_path, &full_file_name, None);
+    }
+
+    Ok(())
 }

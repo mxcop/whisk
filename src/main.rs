@@ -5,6 +5,8 @@ mod files;
 mod term;
 mod cmd;
 
+use cmd::{build, run, clean};
+
 fn main() {
     // Parse arguments.
     let cmd = args::cli();
@@ -13,9 +15,9 @@ fn main() {
     // Execute subcommand.
     let res = match matches.subcommand() {
         Some(("new", _matches)) => todo!(),
-        Some(("build", matches)) => cmd::build::build(matches),
-        Some(("run", matches)) => cmd::run::run(matches),
-        Some(("clean", matches)) => cmd::clean::clean(matches),
+        Some(("build", matches)) => build::build(matches),
+        Some(("run", matches)) => run::run(matches),
+        Some(("clean", matches)) => clean::clean(matches),
         _ => unreachable!(),
     };
 
