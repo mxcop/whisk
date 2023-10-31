@@ -33,7 +33,8 @@ pub struct Profile {
     pub src: Vec<String>,
     pub include: Option<Vec<String>>,
     pub libs: Option<Vec<String>>,
-    pub lib: Option<Vec<String>>
+    pub lib: Option<Vec<String>>,
+    pub precomp: Option<Vec<String>>
 }
 
 impl Profile {
@@ -51,5 +52,14 @@ impl Profile {
         let dirs = get_dirs(pwd, &inc)?;
 
         Ok(Some(dirs.iter().map(|i| format!("-I{}", i.to_string_lossy())).collect()))
+    }
+
+    /// Get the precompiled files for this project as compiler arguments.
+    pub fn precomp_args(&self, pwd: &PathBuf) -> Option<CmdResult<Vec<PathBuf>>> {
+        let Some(ref precomp) = self.precomp else {
+            return None
+        };
+
+        Some(get_files(pwd, &precomp))
     }
 }

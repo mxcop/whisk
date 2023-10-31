@@ -1,0 +1,8 @@
+[package]
+name = "whisk-test"
+
+[profile]
+compiler = "g++"
+src = [ "src/**/*.cpp" ]
+include = [ "src" ]
+precomp = [ "inc/math.h" ]

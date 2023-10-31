@@ -58,6 +58,7 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
     // Spawn process.
     cmd.arg(&file);
     let timer = std::time::SystemTime::now();
+    dbg!(&cmd);
     let Ok(output) = cmd.output() else {
         return Err(werror!("assembler", "failed to spawn compiler process."));
     };
@@ -73,7 +74,7 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
     // Return with error if the compiler returned unsuccessful.
     if !output.status.success() {
         print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
-        return Err(werror!("assembler", "error while compiling `{}`.", file.to_string_lossy()));
+        return Err(werror!("assembler", "error while compiling `{}`.\r\n{}", file.to_string_lossy(), String::from_utf8_lossy(&output.stderr)));
     }
 
     print_label::<BrightGreen>("DONE", &file_path, &full_file_name, Some(time));

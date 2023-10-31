@@ -15,6 +15,9 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     // Output ".i" preprocessed files.
     args.push("-E".to_owned());
 
+    // Add precomp directory.
+    args.push(format!("-I{}", p.join("./bin/gch").to_string_lossy()));
+
     // Add include directories.
     if let Some(inc) = inc {
         args.extend(inc.iter().map(|inc| inc.clone()));
@@ -85,6 +88,7 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
 
     // Spawn process.
     cmd.arg(&file);
+    dbg!(&cmd);
     let timer = std::time::SystemTime::now();
     let Ok(output) = cmd.output() else {
         return Err(werror!("preprocess", "failed to spawn preprocessor process."));

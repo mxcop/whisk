@@ -4,6 +4,7 @@ use clap::ArgMatches;
 use owo_colors::colors::{BrightBlue, BrightCyan, BrightYellow, BrightMagenta, BrightGreen};
 use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status, cmd::result::{CmdResult, toml_result}};
 
+mod precomp;
 mod preprocess;
 mod assemble;
 mod link;
@@ -33,6 +34,19 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let inc_files = cfg.profile.include_args(&pwd)?;
 
     let timer = std::time::SystemTime::now();
+
+    //--------------------------//
+    //  [stage] Pre-compile     //
+    //--------------------------//
+    let precomp_files = if let Some(precomp_files) = cfg.profile.precomp_args(&pwd) {
+        let precomp_files = precomp_files?;
+
+        print_status::<BrightBlue>("Precompile", &cfg.package.name, Some(&abs));
+
+        Some(precomp::precomp(pwd, &compiler, precomp_files, &inc_files)?)
+    } else {
+        None
+    };
 
     //--------------------------//
     //  [stage] Pre-processing  //

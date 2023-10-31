@@ -14,6 +14,7 @@
 - [ ] Manifest file build targets (win, linux, macos) (arm, x86) (32-bit, 64-bit)
 
 ## Features <sup>`nice2have`</sup>
+- [ ] `--verbose` Option on `build` command, which prints all commands with arguments before executing them.
 - [ ] `whisk upload` Calls `whisk package` and then runs a script with env variable for the package location.
 - [ ] Dependency tree generation and proper diff checking using (`-MM`) option on preprocessor.
 - [ ] Custom gcc output parser. (*for errors and warnings*)
