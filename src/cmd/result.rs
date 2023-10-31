@@ -1,6 +1,6 @@
 use std::fmt;
 
-use anstyle::{Style, AnsiColor};
+use owo_colors::OwoColorize;
 
 pub type CmdResult<T> = std::result::Result<T, CmdError>;
 
@@ -24,13 +24,8 @@ impl CmdError {
 
 impl fmt::Display for CmdError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let err_style = Style::new().fg_color(Some(AnsiColor::BrightRed.into())).bold();
-        write!(f, "{}error{}: ", err_style.render(), err_style.render_reset())?;
-
-        let dim_style = Style::new().dimmed();
-        let ctx_style = Style::new().fg_color(Some(AnsiColor::BrightYellow.into())).italic();
-        write!(f, "{}<{}{}{}{}{}>{} ", dim_style.render(), dim_style.render_reset(), ctx_style.render(), self.ctx, ctx_style.render_reset(), dim_style.render(), dim_style.render_reset())?;
-
+        write!(f, "{}: ", "error".bright_red().bold())?;
+        write!(f, "{}{}{} ", "<".dimmed(), self.ctx.bright_yellow().italic(), ">".dimmed())?;
         write!(f, "{}", self.msg)
     }
 }

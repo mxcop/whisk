@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
-use anstyle::AnsiColor;
+use owo_colors::colors::BrightRed;
 
 use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 
@@ -42,17 +42,12 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
     }
 
     // Spawn the process.
-    let Ok(mut process) = cmd.spawn() else {
+    let Ok(output) = cmd.output() else {
         return Err(werror!("linker", "failed to spawn linker process."));
     };
 
-    // Wait for process to finish.
-    let Ok(status) = process.wait() else {
-        return Err(werror!("linker", "failed to get linker process exit status."));
-    };
-
-    if !status.success() {
-        print_label(AnsiColor::BrightRed, "ERROR", &obj_dir, &pname, None);
+    if !output.status.success() {
+        print_label::<BrightRed>("ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
         return Err(werror!("linker", "error while linking!"));
     }
