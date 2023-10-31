@@ -4,13 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anstyle = "1.0.4"   # Terminal colors
-clap = "4.4.6"      # CLI engine
-glob = "0.3.1"      # Used for manifest filepaths
+owo-colors = "3.5.0"    # Terminal colors
+clap = { version = "4.4.6", default-features = false, features = [ "std", "cargo" ] }   # Command args parser
+glob = "0.3.1"          # Used for manifest filepaths
 
-serde = { version = "1.0.189", features = [ "derive" ] }        # Deserialize trait
-toml = { version = "0.8.2", features = [ "parse", "display" ] } # Toml parser
-crossterm_cursor = "0.4.0"
+serde = { version = "1.0.189", features = [ "derive" ] }    # Deserialize trait
+toml = "0.8.2"          # Toml parser
 
 [profile.dev]
 # This isn't required for development builds, but makes development

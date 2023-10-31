@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use anstyle::AnsiColor;
 use clap::ArgMatches;
+use owo_colors::colors::BrightGreen;
 
 use crate::{werror, term::color::print_status};
 
@@ -19,7 +19,7 @@ pub fn clean(args: &ArgMatches) -> CmdResult<()> {
     }
 
     let time = timer.elapsed().unwrap().as_secs_f32();
-    print_status(AnsiColor::BrightGreen, "Cleaned", &format!("in {:.2}s", time), None);
+    print_status::<BrightGreen>("Cleaned", &format!("in {:.2}s", time), None);
     
     Ok(())
 }
