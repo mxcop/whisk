@@ -21,9 +21,11 @@ where
     C: Color,
 {
     print!(
-        "  {} {}\\{file_name}",
-        label.fg::<C>().bold(),
-        path.to_string_lossy().replace("/", "\\")
+        "  {} {}{}{}",
+        label.fg::<C>(),
+        path.to_string_lossy().replace("/", "\\").dimmed(),
+        "\\".dimmed(),
+        file_name.italic()
     );
 
     if let Some(time) = time {

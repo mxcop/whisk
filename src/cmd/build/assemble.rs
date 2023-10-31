@@ -57,14 +57,9 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
 
     // Spawn process.
     cmd.arg(&file);
-    let Ok(mut process) = cmd.spawn() else {
-        return Err(werror!("assembler", "failed to spawn compiler process."));
-    };
     let timer = std::time::SystemTime::now();
-
-    // Wait for process to finish.
-    let Ok(status) = process.wait() else {
-        return Err(werror!("assembler", "failed to get compiler process exit status."));
+    let Ok(output) = cmd.output() else {
+        return Err(werror!("assembler", "failed to spawn compiler process."));
     };
     let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
 
@@ -76,7 +71,7 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
     let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
 
     // Return with error if the compiler returned unsuccessful.
-    if !status.success() {
+    if !output.status.success() {
         print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
         return Err(werror!("assembler", "error while compiling `{}`.", file.to_string_lossy()));
     }

@@ -11,7 +11,7 @@ use crate::{cmd::result::CmdResult, werror, term::color::print_label};
 /// So we can avoid recompiling unchanged files.
 pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Option<Vec<String>>) -> CmdResult<Vec<PathBuf>> {
     let mut args: Vec<String> = Vec::with_capacity(32);
-
+    
     // Output ".i" preprocessed files.
     args.push("-E".to_owned());
 
@@ -85,21 +85,16 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
 
     // Spawn process.
     cmd.arg(&file);
-    let Ok(mut process) = cmd.spawn() else {
-        return Err(werror!("preprocess", "failed to spawn preprocessor process."));
-    };
     let timer = std::time::SystemTime::now();
-
-    // Wait for process to finish.
-    let Ok(status) = process.wait() else {
-        return Err(werror!("preprocess", "failed to get preprocessor process exit status."));
+    let Ok(output) = cmd.output() else {
+        return Err(werror!("preprocess", "failed to spawn preprocessor process."));
     };
     let time = timer.elapsed().unwrap_or_default().as_millis() as u32;
     
     let file_path = file.parent().unwrap().strip_prefix(&pwd).unwrap_or(file.parent().unwrap()).to_path_buf();
     let full_file_name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
 
-    if !status.success() {
+    if !output.status.success() {
         print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
         return Err(werror!("preprocess", "Failed to process `{}`.", file.to_string_lossy()));
     }
