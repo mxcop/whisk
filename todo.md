@@ -4,6 +4,7 @@
 - [x] Static library target option.
 - [x] Checking if manifest file(s) patterns return files.
 - [ ] Better naming for manifest fields `lib` & `libs`.
+- [ ] Precompiled headers.
 - [ ] Dynamic library target. (using `-dynamic` flag on `type="lib"` projects)
 - [ ] `whisk package` Generates a package folder containing a build of the project with all assets and libs.
 - [ ] `prebuild` & `postbuild` fields in manifest to run scripts before and after a build.
