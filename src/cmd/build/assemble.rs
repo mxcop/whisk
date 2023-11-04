@@ -2,12 +2,14 @@ use std::{path::PathBuf, process::Command};
 
 use owo_colors::colors::{BrightGreen, BrightRed};
 
-use crate::{cmd::result::CmdResult, werror, term::color::print_label};
+use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbose}};
 
 /// ### Assembler (-c)
 /// Assemble all changed files into object files.
-pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdResult<()> {
+pub fn assemble(p: &PathBuf, v: bool, lang: &str, compiler: &String, pre_files: Vec<PathBuf>) -> CmdResult<()> {
     let mut args: Vec<String> = Vec::with_capacity(32);
+
+    args.push(format!("-x{lang}"));
 
     // Output ".o" object files.
     args.push("-c".to_owned());
@@ -30,7 +32,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
 
         // Create a new thread for assembling.
         let handle = std::thread::spawn(
-            move || assembler_thread(pwd, out_dir, file, compiler, args)
+            move || assembler_thread(pwd, v, out_dir, file, compiler, args)
         );
 
         threads.push(handle);
@@ -45,7 +47,7 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
 
 /// ### Assembler thread
 /// Thread for processing a single preprocessor file.
-fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: String, args: Vec<String>) -> CmdResult<()> {
+fn assembler_thread(pwd: PathBuf, v: bool, out_dir: PathBuf, file: PathBuf, compiler: String, args: Vec<String>) -> CmdResult<()> {
     // Create compile command.
     let mut cmd = Command::new(&compiler);
     cmd.args(args.iter());
@@ -60,6 +62,12 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
 
     // Spawn process.
     cmd.arg(&file);
+
+    // Verbose logging.
+    if v {
+        log_verbose(&file_name.to_string_lossy(), &cmd);
+    }
+
     let timer = std::time::SystemTime::now();
     let Ok(output) = cmd.output() else {
         return Err(werror!("assembler", "failed to spawn compiler process."));

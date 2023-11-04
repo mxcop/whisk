@@ -2,11 +2,11 @@ use std::{path::PathBuf, process::Command};
 
 use owo_colors::colors::BrightRed;
 
-use crate::{cmd::result::CmdResult, werror, term::color::print_label};
+use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbose}};
 
 /// ### Linker
 /// Link together the final object files into an executable.
-pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec<String>>, lib: &Option<Vec<String>>, pname: &String) -> CmdResult<()> {
+pub fn link(p: &PathBuf, v: bool, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec<String>>, lib: &Option<Vec<String>>, pname: &String) -> CmdResult<()> {
     // Create the link command.
     let mut cmd = Command::new(&compiler);
 
@@ -15,6 +15,7 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
     if std::fs::create_dir_all(&out_dir).is_err() {
         return Err(werror!("linker", "failed to create output directory."));
     }
+
     cmd.arg("-o");
     cmd.arg(out_dir.join(pname));
 
@@ -39,6 +40,11 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
         for lib in libs {
             cmd.arg(format!("-l{}", lib));
         }
+    }
+
+    // Verbose logging.
+    if v {
+        log_verbose(&pname, &cmd);
     }
 
     // Spawn the process.

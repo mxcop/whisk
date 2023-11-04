@@ -2,11 +2,11 @@ use std::{path::PathBuf, process::Command};
 
 use owo_colors::colors::BrightRed;
 
-use crate::{cmd::result::CmdResult, werror, term::color::print_label};
+use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbose}};
 
 /// ### Archiver
 /// Create an archive of the final object files. (static library)
-pub fn archive(p: &PathBuf, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> {
+pub fn archive(p: &PathBuf, v: bool, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> {
     // Create the archive command.
     let mut cmd = Command::new("ar");
     cmd.arg("rcs"); // Flags
@@ -25,6 +25,11 @@ pub fn archive(p: &PathBuf, src: Vec<PathBuf>, pname: &String) -> CmdResult<()> 
         let obj_file = obj_dir.join(format!("{}_{}.o", id, file.file_stem().unwrap_or_default().to_string_lossy()));
         cmd.arg(obj_file);
         id += 1;
+    }
+
+    // Verbose logging.
+    if v {
+        log_verbose(&pname, &cmd);
     }
 
     // Spawn the process.

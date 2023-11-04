@@ -11,6 +11,15 @@ pub struct ProConfig {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Default)]
+pub enum PackageLanguage {
+    #[serde(rename = "c")]
+    C,
+    #[serde(rename = "c++")]
+    #[default]
+    CXX
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
 pub enum PackageType {
     #[serde(rename = "exe")]
     #[default]
@@ -22,9 +31,20 @@ pub enum PackageType {
 #[derive(Debug, Deserialize, Clone)]
 pub struct Package {
     pub name: String,
+    #[serde(default)] 
+    pub lang: PackageLanguage,
     #[serde(rename = "type")]
     #[serde(default)] 
     pub ptype: PackageType
+}
+
+impl Package {
+    pub fn get_lang(&self) -> &'static str {
+        match self.lang {
+            PackageLanguage::C => "c",
+            PackageLanguage::CXX => "c++",
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]

@@ -1,4 +1,4 @@
-use std::{path::PathBuf, process::Command, char};
+use std::{path::PathBuf, process::Command};
 
 use clap::ArgMatches;
 

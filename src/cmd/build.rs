@@ -16,6 +16,14 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let abs = canonicalize(&pwd).expect("Failed to get absolute project path").to_string_lossy().to_string();
     let abs = abs.trim_start_matches("\\\\?\\").to_owned().replace("/", "\\");
 
+    let v = match args
+        .get_one::<u8>("verbose")
+        .expect("Issue with clap [verbose flag]")
+    {
+        0 => false,
+        _ => true
+    };
+
     // Read project config file.
     let toml_path = pwd.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
@@ -27,6 +35,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
 
     // TODO: change this default...
     let compiler = cfg.profile.compiler.clone().unwrap_or("g++".into());
+    let language = cfg.package.get_lang();
 
     // Gather the project files.
     let src_files = cfg.profile.source_args(&pwd)?;
@@ -38,7 +47,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     //  [stage] Pre-processing  //
     //--------------------------//
     print_status::<BrightBlue>("Preprocess", &cfg.package.name, Some(&abs));
-    let pre_files = preprocess::preprocess(pwd, &compiler, src_files.clone(), &inc_files)?;
+    let pre_files = preprocess::preprocess(pwd, v, language, &compiler, src_files.clone(), &inc_files)?;
 
     let out_file = match cfg.package.ptype {
         PackageType::Executable => pwd.join(format!("./bin/{}.exe", &cfg.package.name)),
@@ -58,7 +67,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     //--------------------------//
     println!();
     print_status::<BrightYellow>("Assembling", &cfg.package.name, Some(&abs));
-    assemble::assemble(pwd, &compiler, pre_files)?;
+    assemble::assemble(pwd, v, language, &compiler, pre_files)?;
 
     //--------------------------//
     //  [stage] Linking         //
@@ -66,8 +75,8 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     println!();
     print_status::<BrightMagenta>("Linking ", &cfg.package.name, Some(&abs));
     match cfg.package.ptype {
-        PackageType::Executable => link::link(pwd, &compiler, src_files, &cfg.profile.libs, &cfg.profile.lib, &cfg.package.name)?,
-        PackageType::Library => archive::archive(pwd, src_files, &cfg.package.name)?
+        PackageType::Executable => link::link(pwd, v, &compiler, src_files, &cfg.profile.libs, &cfg.profile.lib, &cfg.package.name)?,
+        PackageType::Library => archive::archive(pwd, v, src_files, &cfg.package.name)?
     };
     
     let time = timer.elapsed().unwrap().as_secs_f32();

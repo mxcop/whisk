@@ -2,15 +2,17 @@ use std::{path::PathBuf, sync::{Arc, Mutex}, process::Command};
 
 use owo_colors::colors::{BrightRed, BrightGreen, BrightCyan};
 
-use crate::{cmd::result::CmdResult, werror, term::color::print_label};
+use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbose}};
 
 /// ### Preprocessor (-E)
 /// Pre-process all project source files.
 /// 
 /// Returns a list of the pre-proccesed files that changed.
 /// So we can avoid recompiling unchanged files.
-pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Option<Vec<String>>) -> CmdResult<Vec<PathBuf>> {
+pub fn preprocess(p: &PathBuf, v: bool, lang: &str, compiler: &String, src: Vec<PathBuf>, inc: &Option<Vec<String>>) -> CmdResult<Vec<PathBuf>> {
     let mut args: Vec<String> = Vec::with_capacity(32);
+
+    args.push(format!("-x{lang}"));
     
     // Output ".i" preprocessed files.
     args.push("-E".to_owned());
@@ -43,7 +45,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
 
         // Create a new thread for compiling.
         let handle = std::thread::spawn(
-            move || preprocess_thread(pwd, pre_dir, obj_dir, file, uid, compiler, args, changed_files)
+            move || preprocess_thread(pwd, v, pre_dir, obj_dir, file, uid, compiler, args, changed_files)
         );
 
         threads.push(handle);
@@ -66,7 +68,7 @@ pub fn preprocess(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, inc: &Optio
     }
 }
 
-fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: PathBuf, uid: u32, compiler: String, args: Vec<String>, changed_files: Arc<Mutex<Vec<PathBuf>>>) -> CmdResult<()> {
+fn preprocess_thread(pwd: PathBuf, v: bool, pre_dir: PathBuf, obj_dir: PathBuf, file: PathBuf, uid: u32, compiler: String, args: Vec<String>, changed_files: Arc<Mutex<Vec<PathBuf>>>) -> CmdResult<()> {
     // Create compile command.
     let mut cmd = Command::new(&compiler);
     cmd.args(args.iter());
@@ -85,6 +87,12 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
 
     // Spawn process.
     cmd.arg(&file);
+    
+    // Verbose logging.
+    if v {
+        log_verbose(&file_name.to_string(), &cmd);
+    }
+
     let timer = std::time::SystemTime::now();
     let Ok(output) = cmd.output() else {
         return Err(werror!("preprocess", "failed to spawn preprocessor process."));
@@ -96,7 +104,7 @@ fn preprocess_thread(pwd: PathBuf, pre_dir: PathBuf, obj_dir: PathBuf, file: Pat
 
     if !output.status.success() {
         print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
-        return Err(werror!("preprocess", "Failed to process `{}`.", file.to_string_lossy()));
+        return Err(werror!("preprocess", "failed to process `{}`.\n{}", file.to_string_lossy(), String::from_utf8_lossy(&output.stderr)));
     }
 
     // Check if the associated object file exists.
