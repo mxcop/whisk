@@ -15,12 +15,15 @@
     "properties": {
         "package": {
             "$ref": "#/definitions/Package"
+        },
+        "profile": {
+            "$ref": "#/definitions/Profile"
         }
     },
     "definitions": {
         "Package": {
             "title": "Package",
-            "description": "The only fields required by Whisk are [`name`]() and\n[`lang`]().",
+            "description": "The only field required by Whisk is [`name`]().",
             "type": "object",
             "required": [
                 "name"
@@ -33,12 +36,23 @@
                 "lang": {
                     "description": "The package language can either be `c` or `c++`. It is used\nto determine how to build the package and which files to expect. (default `c++`)",
                     "type": "string",
-                    "enum": ["c", "c++"]
+                    "enum": [
+                        "c",
+                        "c++"
+                    ],
+                    "default": "c++",
+                    "x-taplo": {
+                        "defaultValue": "c++"
+                    }
                 },
                 "type": {
                     "description": "The package type determines how the code is packaged.\nIt can either be `exe` for an executable or `lib` for a library. (default `exe`)",
                     "type": "string",
-                    "enum": ["exe", "lib"],
+                    "enum": [
+                        "exe",
+                        "lib"
+                    ],
+                    "default": "exe",
                     "x-taplo": {
                         "enumValues": [
                             "Build this package as an executable.",
@@ -47,6 +61,49 @@
                         "defaultValue": "exe"
                     }
                 }
+            }
+        },
+        "Profile": {
+            "required": [
+                "compiler",
+                "src"
+            ],
+            "compiler": {
+                "description": "The compiler to use when compiling the package. (should be a GCC-compatible compiler)\nIt will be used as a command so `gcc` or `path/to/gcc` would both be valid.",
+                "type": "string"
+            },
+            "src": {
+                "description": "The paths / glob patterns to all package source files. `.c` / `.cpp`\n(e.g. `src/**/*.c`, `src/main.cpp`, ...)",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            },
+            "include": {
+                "description": "The include directories for this package, the locations from which the compiler will search for header files.\n(e.g. `src`, `./inc`, `src/`, ...)",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "libs": {
+                "description": "The library directories for this package, the locations from which the compiler will search for libraries.\n(e.g. `lib`, `./lib`, `lib/`, ...)",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "lib": {
+                "description": "The libraries used by this package, they should be located within directories specified in the `libs`.\n(e.g. `glfw`, `sdl`, ...)",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
             }
         }
     }
