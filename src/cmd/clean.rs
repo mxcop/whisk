@@ -11,6 +11,9 @@ use super::result::CmdResult;
 pub fn clean(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `clean` command.");
+    if pwd.exists() == false {
+        return Err(werror!("filesystem", "{:?} isn't a directory", pwd));
+    }
 
     let timer = std::time::SystemTime::now();
 

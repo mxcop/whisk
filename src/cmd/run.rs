@@ -10,6 +10,9 @@ use super::{result::{CmdResult, toml_result}, build};
 pub fn run(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `run` command.");
+    if pwd.exists() == false {
+        return Err(werror!("filesystem", "{:?} isn't a directory", pwd));
+    }
     let bin_dir = pwd.join("./bin/");
 
     // Read project config file.

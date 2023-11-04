@@ -13,6 +13,9 @@ mod archive;
 pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `build` command.");
+    if pwd.exists() == false {
+        return Err(werror!("filesystem", "{:?} isn't a directory", pwd));
+    }
     let abs = canonicalize(&pwd).expect("Failed to get absolute project path").to_string_lossy().to_string();
     let abs = abs.trim_start_matches("\\\\?\\").to_owned().replace("/", "\\");
 
@@ -27,7 +30,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Read project config file.
     let toml_path = pwd.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
-        return Err(werror!("filesystem", "`whisk.toml` not found in `{}`", pwd.to_str().unwrap_or("-")));
+        return Err(werror!("filesystem", "`whisk.toml` not found in {:?}", pwd));
     };
 
     // Parse project config file.
