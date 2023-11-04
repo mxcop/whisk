@@ -1,4 +1,5 @@
 {
+    "$id": "Whisk manifest (whisk.toml)",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Whisk manifest (whisk.toml)",
     "description": "A schema for whisk manifest.",
