@@ -49,7 +49,7 @@ pub fn link(p: &PathBuf, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec
     if !output.status.success() {
         print_label::<BrightRed>("ERROR", &obj_dir, &pname, None);
         // TODO: improve error msg.
-        return Err(werror!("linker", "error while linking!"));
+        return Err(werror!("linker", "error while linking!\n{}", String::from_utf8_lossy(&output.stderr)));
     }
 
     Ok(())

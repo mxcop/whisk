@@ -11,6 +11,9 @@ pub fn assemble(p: &PathBuf, compiler: &String, pre_files: Vec<PathBuf>) -> CmdR
 
     // Output ".o" object files.
     args.push("-c".to_owned());
+    // args.push("-w".to_owned());
+    // args.push("-std=c++17".to_owned());
+    // args.push("-msse4.2".to_owned());
 
     // Create output directory.
     let out_dir = p.join("./bin/obj/");
@@ -73,7 +76,7 @@ fn assembler_thread(pwd: PathBuf, out_dir: PathBuf, file: PathBuf, compiler: Str
     // Return with error if the compiler returned unsuccessful.
     if !output.status.success() {
         print_label::<BrightRed>("ERROR", &file_path, &full_file_name, None);
-        return Err(werror!("assembler", "error while compiling `{}`.", file.to_string_lossy()));
+        return Err(werror!("assembler", "error while compiling `{}`.\n{}", file.to_string_lossy(), String::from_utf8_lossy(&output.stderr)));
     }
 
     print_label::<BrightGreen>("DONE", &file_path, &full_file_name, Some(time));

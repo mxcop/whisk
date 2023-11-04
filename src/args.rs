@@ -14,6 +14,12 @@ pub fn cli() -> Command {
                 .arg_required_else_help(true),
         )
         .subcommand(
+            Command::new("tree")
+                .about("Makes tree of a project")
+                .arg(arg!(path: <PATH> "Project path").required(false)
+                    .value_parser(clap::value_parser!(PathBuf)).default_value("."))
+        )
+        .subcommand(
             Command::new("build")
                 .about("Builds a project")
                 .arg(arg!(path: <PATH> "Project path").required(false)

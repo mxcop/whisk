@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "math.h"
+#include "test.h"
 
 int main() {
     printf("Hello, world!\n");
