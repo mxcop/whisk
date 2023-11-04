@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Whisk manifest (whisk.toml)",
+    "description": "A schema for whisk manifest.",
+    "x-taplo-info": {
+        "authors": [
+            "Max <mxcop> (https://github.com/mxcop)"
+        ],
+        "patterns": [
+            "^(.*(/|\\\\)whisk\\.toml|whisk\\.toml)$"
+        ]
+    },
+    "type": "object",
+    "properties": {
+        "package": {
+            "$ref": "#/definitions/Package"
+        }
+    },
+    "definitions": {
+        "Package": {
+            "title": "Package",
+            "description": "The only fields required by Whisk are [`name`]() and\n[`lang`]().",
+            "type": "object",
+            "required": [
+                "name",
+                "lang"
+            ],
+            "properties": {
+                "name": {
+                    "description": "The package name is an identifier used to refer to the package.\nIt is also the default name of the output binary.",
+                    "type": "string"
+                },
+                "lang": {
+                    "description": "The package language can either be `c` or `c++`. It is used\nto determine how to build the package and which files to expect.",
+                    "type": "string",
+                    "enum": ["c", "c++"]
+                }
+            }
+        }
+    }
+}
