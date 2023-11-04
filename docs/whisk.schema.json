@@ -1,5 +1,5 @@
 {
-    "$id": "Whisk manifest (whisk.toml)",
+    "$id": "https://raw.githubusercontent.com/mxcop/whisk/main/docs/whisk.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Whisk manifest (whisk.toml)",
     "description": "A schema for whisk manifest.",
@@ -23,8 +23,7 @@
             "description": "The only fields required by Whisk are [`name`]() and\n[`lang`]().",
             "type": "object",
             "required": [
-                "name",
-                "lang"
+                "name"
             ],
             "properties": {
                 "name": {
@@ -32,9 +31,21 @@
                     "type": "string"
                 },
                 "lang": {
-                    "description": "The package language can either be `c` or `c++`. It is used\nto determine how to build the package and which files to expect.",
+                    "description": "The package language can either be `c` or `c++`. It is used\nto determine how to build the package and which files to expect. (default `c++`)",
                     "type": "string",
                     "enum": ["c", "c++"]
+                },
+                "type": {
+                    "description": "The package type determines how the code is packaged.\nIt can either be `exe` for an executable or `lib` for a library. (default `exe`)",
+                    "type": "string",
+                    "enum": ["exe", "lib"],
+                    "x-taplo": {
+                        "enumValues": [
+                            "Build this package as an executable.",
+                            "Build this package as a library."
+                        ],
+                        "defaultValue": "exe"
+                    }
                 }
             }
         }
