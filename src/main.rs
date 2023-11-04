@@ -1,5 +1,5 @@
 mod args;
-mod cfg;
+mod man; // manifest file
 
 mod files;
 mod term;

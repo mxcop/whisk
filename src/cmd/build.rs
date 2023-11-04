@@ -2,7 +2,7 @@ use std::{path::PathBuf, fs::canonicalize};
 
 use clap::ArgMatches;
 use owo_colors::colors::{BrightBlue, BrightCyan, BrightYellow, BrightMagenta, BrightGreen};
-use crate::{cfg::{ProConfig, PackageType}, werror, term::color::print_status, cmd::result::{CmdResult, toml_result}};
+use crate::{man::{WhiskManifest, PackageType}, werror, term::color::print_status, cmd::result::{CmdResult, toml_result}};
 
 mod preprocess;
 mod assemble;
@@ -34,15 +34,16 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     };
 
     // Parse project config file.
-    let cfg: ProConfig = toml_result(toml::from_str(&toml))?;
+    let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
 
     // TODO: change this default...
-    let compiler = cfg.profile.compiler.clone().unwrap_or("g++".into());
+    let target = &cfg.package.target;
+    let compiler = target.compiler.clone().unwrap_or("g++".into());
     let language = cfg.package.get_lang();
 
     // Gather the project files.
-    let src_files = cfg.profile.source_args(&pwd)?;
-    let inc_files = cfg.profile.include_args(&pwd)?;
+    let src_files = cfg.source_args(&pwd)?;
+    let inc_files = cfg.include_args(&pwd)?;
 
     let timer = std::time::SystemTime::now();
 
@@ -78,7 +79,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     println!();
     print_status::<BrightMagenta>("Linking ", &cfg.package.name, Some(&abs));
     match cfg.package.ptype {
-        PackageType::Executable => link::link(pwd, v, &compiler, src_files, &cfg.profile.libs, &cfg.profile.lib, &cfg.package.name)?,
+        PackageType::Executable => link::link(pwd, v, &compiler, src_files, &target.libs, &target.lib, &cfg.package.name)?,
         PackageType::Library => archive::archive(pwd, v, src_files, &cfg.package.name)?
     };
     

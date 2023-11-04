@@ -2,7 +2,7 @@ use std::{process::Command, path::PathBuf, fs::canonicalize};
 
 use clap::ArgMatches;
 use owo_colors::colors::{BrightYellow, BrightGreen};
-use crate::{werror, cfg::{ProConfig, PackageType}, term::color::print_status};
+use crate::{werror, man::{WhiskManifest, PackageType}, term::color::print_status};
 
 use super::{result::{CmdResult, toml_result}, build};
 
@@ -22,7 +22,7 @@ pub fn run(args: &ArgMatches) -> CmdResult<()> {
     };
 
     // Parse project config file.
-    let cfg: ProConfig = toml_result(toml::from_str(&toml))?;
+    let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
 
     // Exit if this is a library.
     if cfg.package.ptype == PackageType::Library {

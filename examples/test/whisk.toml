@@ -1,7 +1,8 @@
 [package]
 name = "whisk-test"
-
-[profile]
 compiler = "g++"
 src = [ "src/**/*.cpp" ]
 include = [ "inc", "src" ]
+
+[target.x86-windows-64]
+compiler = "g++"

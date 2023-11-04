@@ -2,7 +2,7 @@ use std::{path::PathBuf, process::Command};
 
 use clap::ArgMatches;
 
-use crate::{werror, cfg::ProConfig, cmd::result::toml_result};
+use crate::{werror, man::WhiskManifest, cmd::result::toml_result};
 
 use super::result::CmdResult;
 
@@ -35,14 +35,15 @@ pub fn gen_tree(args: &ArgMatches) -> CmdResult<()> {
     };
 
     // Parse project config file.
-    let cfg: ProConfig = toml_result(toml::from_str(&toml))?;
+    let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
     
     // TODO: change this default...
-    let compiler = cfg.profile.compiler.clone().unwrap_or("g++".into());
+    let target = &cfg.package.target;
+    let compiler = target.compiler.clone().unwrap_or("g++".into());
 
     // Gather the project files.
-    let src_files = cfg.profile.source_args(&pwd)?;
-    let inc_files = cfg.profile.include_args(&pwd)?;
+    let src_files = cfg.source_args(&pwd)?;
+    let inc_files = cfg.include_args(&pwd)?;
 
     // Create compile command.
     let mut cmd = Command::new(&compiler);
@@ -88,9 +89,8 @@ pub fn gen_tree(args: &ArgMatches) -> CmdResult<()> {
                 files.push(file);
                 file = File::new();
             },
-            '\\' if Some(&'\n') == chars.peek() => {
-                chars.next(); // skip newline
-                while let Some(' ') = chars.peek() { chars.next(); } // skip spaces
+            '\\' if Some(&'\n') == chars.peek() || Some(&'\r') == chars.peek() => {
+                while let Some(a) = chars.peek() { if a.is_ascii_whitespace() { chars.next(); } else { break; } } // skip whitespace
             },
             ':' => {/* ignore ':' char */},
             _ => {
@@ -110,7 +110,7 @@ pub fn gen_tree(args: &ArgMatches) -> CmdResult<()> {
         }
     }
 
-    println!("\n{}", String::from_utf8_lossy(&output.stdout));
+    println!("\n{:#?}", String::from_utf8_lossy(&output.stdout));
 
     Ok(())
 }
