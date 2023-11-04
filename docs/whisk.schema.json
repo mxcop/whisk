@@ -64,6 +64,9 @@
             }
         },
         "Profile": {
+            "title": "Profile",
+            "description": "The profile of the Whisk package.\nSpecifies info required to build the package.",
+            "type": "object",
             "required": [
                 "compiler",
                 "src"

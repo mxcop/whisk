@@ -2,10 +2,11 @@
 name = "whisk-test"
 
 [profile]
-compiler = "g++"
 
-src = [ "src/main.cpp" ]
-include = [ "lib/whisk-lib/include" ]
+# compiler = "g++"
 
-libs = [ "lib/whisk-lib" ]
-lib = [ "whisk" ]
+# src = [ "src/main.cpp" ]
+# include = [ "lib/whisk-lib/include" ]
+
+# libs = [ "lib/whisk-lib" ]
+# lib = [ "whisk" ]
