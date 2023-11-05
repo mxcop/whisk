@@ -33,19 +33,9 @@ The only field required by Whisk is [`name`](#the-name-field).
 ### The `name` field
 
 The package name is an identifier used to refer to the package. It is used<br>
-when listed as a dependency in another package, and as the default name of<br>
-inferred lib and bin targets.
+for the name of the binary or archive.
 
 The name must use only alphanumeric characters, or `-`, or `_`, and cannot be empty.
-
-Note that [`cargo new`] and [`cargo init`] impose some additional restrictions on<br>
-the package name, such as enforcing that it is a valid Rust identifier and not<br>
-a keyword. [crates.io] imposes even more restrictions, such as:
-
-- Only ASCII characters are allowed.
-- Do not use reserved names.
-- Do not use special Windows names such as "nul".
-- Use a maximum of 64 characters of length.
 
 ### The `lang` field
 
