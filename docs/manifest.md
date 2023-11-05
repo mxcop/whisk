@@ -12,8 +12,10 @@ Every manifest file consists of the following sections:
 
 * [`[package]`](#the-package-section) ~ Defines a package.
   * [`name`](#the-name-field) The name of the package. *(and output binary / lib)*
-  * [`std-version`](#the-rust-version-field) The C/C++ standard version used by this package.
-* [`[profile]`](profiles.md) ~ Compiler settings and optimizations.
+  * [`lang`](#the-lang-field) The language this package uses. *(c / c++)*
+  * [`type`](#the-type-field) The type of this package. *(exe / lib)*
+  * [`...target`](targets.md) All target fields are also available in the [`[package]`](#the-package-section).
+* [`[target.*]`](targets.md) ~ Compiler settings and build configuration.
 
 ## The `[package]` section
 
@@ -45,54 +47,19 @@ a keyword. [crates.io] imposes even more restrictions, such as:
 - Do not use special Windows names such as "nul".
 - Use a maximum of 64 characters of length.
 
-## The `[target.*]` section
+### The `lang` field
 
-This section can occur multiple times with different suffixes.<br>
-Each different section defines a different build target.
+The package language is used to tell the compiler how to interpret your source and header files.<br>
+It can only be one of three options :
 
-```toml
-[target] # super target (used as default for all targets)
-compiler = "gcc"
-src      = [ "main.c", "src/**/*.c" ]
-include  = [ "inc/"  , "lib/glfw/include/" ]
-lib      = [ "glfw" ]
+- `c` for C projects.
+- `c++` for C++ projects.
+- `auto` for mixed projects. *(not recommended)*
 
-[target.x86-windows-64]
-libs = [ "lib/win64/" ]
+### The `type` field
 
-[target.x86-windows-32]
-libs = [ "lib/win32/" ]
-```
+The package type dictates what the compiler output should be.<be>
+It can only be one of two options :
 
-Good practice for naming your targets is to use the following format:<br>
-[`<target_arch>`] - [`<target_os>`] - [`<target_pointer_width>`]
-
-[`<target_arch>`]: #target_arch-examples
-[`<target_os>`]: #target_os-examples
-[`<target_pointer_width>`]: #target_pointer_width-examples
-
-### `target_arch` examples
-* `"x86"`
-* `"x86_64"`
-* `"mips"`
-* `"powerpc"`
-* `"powerpc64"`
-* `"arm"`
-* `"aarch64"`
-
-### `target_os` examples
-* `"windows"`
-* `"macos"`
-* `"ios"`
-* `"linux"`
-* `"android"`
-* `"freebsd"`
-* `"dragonfly"`
-* `"openbsd"`
-* `"netbsd"`
-
-### `target_pointer_width` examples
-* `"8"`
-* `"16"`
-* `"32"`
-* `"64"`
+- `exe` for executables *(programs)*
+- `lib` for libraries *(static / dynamic)*

@@ -16,7 +16,7 @@
         "package": {
             "$ref": "#/definitions/Package"
         },
-        "profile": {
+        "target": {
             "$ref": "#/definitions/Profile"
         }
     },
@@ -61,16 +61,15 @@
                         "defaultValue": "exe"
                     }
                 }
+            },
+            "additionalProperties": {
+                "$ref": "#/definitions/Target"
             }
         },
-        "Profile": {
-            "title": "Profile",
-            "description": "The profile of the Whisk package.\nSpecifies info required to build the package.",
+        "Target": {
+            "title": "Target",
+            "description": "A target of a Whisk package.\nSpecifies info required to build the package.",
             "type": "object",
-            "required": [
-                "compiler",
-                "src"
-            ],
             "compiler": {
                 "description": "The compiler to use when compiling the package. (should be a GCC-compatible compiler)\nIt will be used as a command so `gcc` or `path/to/gcc` would both be valid.",
                 "type": "string"
@@ -107,6 +106,14 @@
                     "type": "string"
                 },
                 "uniqueItems": true
+            }
+        },
+        "Targets": {
+            "title": "Targets",
+            "description": "Targets provide a way to alter the compiler settings for different build environments.",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/Target"
             }
         }
     }
