@@ -15,6 +15,12 @@ pub fn clean(args: &ArgMatches) -> CmdResult<()> {
         return Err(werror!("filesystem", "{:?} isn't a directory", pwd));
     }
 
+    // Don't clean if already cleaned.
+    if pwd.join("./bin/").exists() == false {
+        print_status::<BrightGreen>("Cleaned", "in notime", None);
+        return Ok(());
+    }
+
     let timer = std::time::SystemTime::now();
 
     if std::fs::remove_dir_all(pwd.join("./bin/")).is_err() {
