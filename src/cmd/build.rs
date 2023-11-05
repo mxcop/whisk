@@ -52,7 +52,10 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let pre_files = preprocess::preprocess(pwd, v, language, &compiler, src_files.clone(), &inc_files)?;
 
     let out_file = match cfg.package.ptype {
+        #[cfg(target_os = "windows")]
         PackageType::Executable => pwd.join(format!("./bin/{}.exe", &cfg.package.name)),
+        #[cfg(target_os = "linux")]
+        PackageType::Executable => pwd.join(format!("./bin/{}", &cfg.package.name)),
         PackageType::Library => pwd.join(format!("./bin/lib{}.a", &cfg.package.name)),
     };
 
