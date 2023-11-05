@@ -2,7 +2,7 @@ use std::{path::PathBuf, process::Command};
 
 use clap::ArgMatches;
 
-use crate::{werror, man::WhiskManifest, cmd::result::toml_result};
+use crate::{werror, man::WhiskManifest, cmd::{result::toml_result, target}};
 
 use super::result::CmdResult;
 
@@ -28,6 +28,10 @@ pub fn gen_tree(args: &ArgMatches) -> CmdResult<()> {
     // Retrieve CLI arguments.
     let pwd = args.get_one::<PathBuf>("path").expect("Missing path in `build` command.");
 
+    let v = *args
+        .get_one::<bool>("verbose")
+        .expect("Issue with clap [verbose flag]");
+
     // Read project config file.
     let toml_path = pwd.join("whisk.toml");
     let Ok(toml) = std::fs::read_to_string(toml_path) else {
@@ -36,14 +40,16 @@ pub fn gen_tree(args: &ArgMatches) -> CmdResult<()> {
 
     // Parse project config file.
     let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
+
+    // Get build target information for this package.
+    let target = target::get_target_info(&cfg, args.get_one::<String>("target"), v);
     
     // TODO: change this default...
-    let target = &cfg.package.target;
     let compiler = target.compiler.clone().unwrap_or("g++".into());
 
     // Gather the project files.
-    let src_files = cfg.source_args(&pwd)?;
-    let inc_files = cfg.include_args(&pwd)?;
+    let src_files = target.source_args(&pwd)?;
+    let inc_files = target.include_args(&pwd)?;
 
     // Create compile command.
     let mut cmd = Command::new(&compiler);

@@ -2,7 +2,7 @@ use std::{path::PathBuf, fs::canonicalize};
 
 use clap::ArgMatches;
 use owo_colors::colors::{BrightBlue, BrightCyan, BrightYellow, BrightMagenta, BrightGreen};
-use crate::{man::{WhiskManifest, PackageType}, werror, term::color::print_status, cmd::result::{CmdResult, toml_result}};
+use crate::{man::{WhiskManifest, PackageType}, werror, term::color::print_status, cmd::{result::{CmdResult, toml_result}, target}};
 
 mod preprocess;
 mod assemble;
@@ -19,13 +19,9 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let abs = canonicalize(&pwd).expect("Failed to get absolute project path").to_string_lossy().to_string();
     let abs = abs.trim_start_matches("\\\\?\\").to_owned().replace("/", "\\");
 
-    let v = match args
-        .get_one::<u8>("verbose")
-        .expect("Issue with clap [verbose flag]")
-    {
-        0 => false,
-        _ => true
-    };
+    let v = *args
+        .get_one::<bool>("verbose")
+        .expect("Issue with clap [verbose flag]");
 
     // Read project config file.
     let toml_path = pwd.join("whisk.toml");
@@ -36,14 +32,16 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Parse project config file.
     let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
 
+    // Get build target information for this package.
+    let target = target::get_target_info(&cfg, args.get_one::<String>("target"), v);
+
     // TODO: change this default...
-    let target = &cfg.package.target;
     let compiler = target.compiler.clone().unwrap_or("g++".into());
     let language = cfg.package.get_lang();
 
     // Gather the project files.
-    let src_files = cfg.source_args(&pwd)?;
-    let inc_files = cfg.include_args(&pwd)?;
+    let src_files = target.source_args(&pwd)?;
+    let inc_files = target.include_args(&pwd)?;
 
     let timer = std::time::SystemTime::now();
 

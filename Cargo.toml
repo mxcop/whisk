@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 owo-colors = "3.5.0"    # Terminal colors
-clap = { version = "4.4.6", default-features = false, features = [ "std", "cargo" ] }   # Command args parser
+clap = { version = "4.4.6", default-features = false, features = [ "std", "help", "usage", "cargo" ] } # Command args parser
 glob = "0.3.1"          # Used for manifest filepaths
 
 serde = { version = "1.0.189", features = [ "derive" ] }    # Deserialize trait
@@ -18,7 +18,7 @@ toml = "0.8.2"          # Toml parser
 panic = "abort"     # Abort on panic
 
 [profile.release]
-opt-level = "z"     # Optimize for size
+opt-level = 3       # Optimize for speed
 lto = true          # Enable link time optimization
 codegen-units = 1   # Reduce number of codegen units to increase optimizations
 panic = "abort"     # Abort on panic

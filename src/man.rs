@@ -73,18 +73,18 @@ impl Package {
     }
 }
 
-impl WhiskManifest {
-    /// Get the source files for this project as compiler arguments.
+impl Target {
+    /// Get the source files for this target as compiler arguments.
     pub fn source_args(&self, pwd: &PathBuf) -> CmdResult<Vec<PathBuf>> {
-        match self.package.target.src.as_ref() {
+        match self.src.as_ref() {
             Some(src) => get_files(pwd, src),
             None => Ok(Vec::new()),
         }
     }
 
-    /// Get the includes for this project as compiler arguments.
+    /// Get the includes for this target as compiler arguments.
     pub fn include_args(&self, pwd: &PathBuf) -> CmdResult<Option<Vec<String>>> {
-        let Some(ref inc) = &self.package.target.include else {
+        let Some(ref inc) = &self.include else {
             return Ok(None)
         };
 

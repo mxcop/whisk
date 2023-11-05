@@ -4,5 +4,5 @@ compiler = "g++"
 src = [ "src/**/*.cpp" ]
 include = [ "inc", "src" ]
 
-[target.x86-windows-64]
+[target.x86_64-windows-64]
 compiler = "g++"
