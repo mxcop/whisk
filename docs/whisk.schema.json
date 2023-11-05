@@ -22,49 +22,53 @@
     },
     "definitions": {
         "Package": {
-            "title": "Package",
-            "description": "The only field required by Whisk is [`name`]().",
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "name": {
-                    "description": "The package name is an identifier used to refer to the package.\nIt is also the default name of the output binary.",
-                    "type": "string"
-                },
-                "lang": {
-                    "description": "The package language can either be `c` or `c++`. It is used\nto determine how to build the package and which files to expect. (default `c++`)",
-                    "type": "string",
-                    "enum": [
-                        "c",
-                        "c++"
+            "allOf": [
+                {
+                    "title": "Package",
+                    "description": "The only field required by Whisk is [`name`]().",
+                    "type": "object",
+                    "required": [
+                        "name"
                     ],
-                    "default": "c++",
-                    "x-taplo": {
-                        "defaultValue": "c++"
+                    "properties": {
+                        "name": {
+                            "description": "The package name is an identifier used to refer to the package.\nIt is also the default name of the output binary.",
+                            "type": "string"
+                        },
+                        "lang": {
+                            "description": "The package language can either be `c` or `c++`. It is used\nto determine how to build the package and which files to expect. (default `c++`)",
+                            "type": "string",
+                            "enum": [
+                                "c",
+                                "c++"
+                            ],
+                            "default": "c++",
+                            "x-taplo": {
+                                "defaultValue": "c++"
+                            }
+                        },
+                        "type": {
+                            "description": "The package type determines how the code is packaged.\nIt can either be `exe` for an executable or `lib` for a library. (default `exe`)",
+                            "type": "string",
+                            "enum": [
+                                "exe",
+                                "lib"
+                            ],
+                            "default": "exe",
+                            "x-taplo": {
+                                "enumValues": [
+                                    "Build this package as an executable.",
+                                    "Build this package as a library."
+                                ],
+                                "defaultValue": "exe"
+                            }
+                        }
                     }
                 },
-                "type": {
-                    "description": "The package type determines how the code is packaged.\nIt can either be `exe` for an executable or `lib` for a library. (default `exe`)",
-                    "type": "string",
-                    "enum": [
-                        "exe",
-                        "lib"
-                    ],
-                    "default": "exe",
-                    "x-taplo": {
-                        "enumValues": [
-                            "Build this package as an executable.",
-                            "Build this package as a library."
-                        ],
-                        "defaultValue": "exe"
-                    }
+                {
+                    "$ref": "#/definitions/Target"
                 }
-            },
-            "additionalProperties": {
-                "$ref": "#/definitions/Target"
-            }
+            ]
         },
         "Target": {
             "title": "Target",
