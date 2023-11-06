@@ -43,13 +43,17 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let src_files = target.source_args(&pwd)?;
     let inc_files = target.include_args(&pwd)?;
 
+    // Global compiler arguments.
+    let mut g_args: Vec<String> = Vec::new();
+    g_args.append(&mut cfg.profile.unwrap_or_default().debug()); // TEMP: testing
+
     let timer = std::time::SystemTime::now();
 
     //--------------------------//
     //  [stage] Pre-processing  //
     //--------------------------//
     print_status::<BrightBlue>("Preprocess", &cfg.package.name, Some(&abs));
-    let pre_files = preprocess::preprocess(pwd, v, language, &compiler, src_files.clone(), &inc_files)?;
+    let pre_files = preprocess::preprocess(pwd, v, &g_args, language, &compiler, src_files.clone(), &inc_files)?;
 
     let out_file = match cfg.package.ptype {
         #[cfg(target_os = "windows")]
@@ -72,7 +76,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     //--------------------------//
     println!();
     print_status::<BrightYellow>("Assembling", &cfg.package.name, Some(&abs));
-    assemble::assemble(pwd, v, language, &compiler, pre_files)?;
+    assemble::assemble(pwd, v, &g_args, language, &compiler, pre_files)?;
 
     //--------------------------//
     //  [stage] Linking         //
@@ -80,7 +84,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     println!();
     print_status::<BrightMagenta>("Linking ", &cfg.package.name, Some(&abs));
     match cfg.package.ptype {
-        PackageType::Executable => link::link(pwd, v, &compiler, src_files, &target.libs, &target.lib, &cfg.package.name)?,
+        PackageType::Executable => link::link(pwd, v, &g_args, &compiler, src_files, &target.libs, &target.lib, &cfg.package.name)?,
         PackageType::Library => archive::archive(pwd, v, src_files, &cfg.package.name)?
     };
     

@@ -6,9 +6,10 @@ use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbo
 
 /// ### Linker
 /// Link together the final object files into an executable.
-pub fn link(p: &PathBuf, v: bool, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec<String>>, lib: &Option<Vec<String>>, pname: &String) -> CmdResult<()> {
+pub fn link(p: &PathBuf, v: bool, g_args: &Vec<String>, compiler: &String, src: Vec<PathBuf>, libs: &Option<Vec<String>>, lib: &Option<Vec<String>>, pname: &String) -> CmdResult<()> {
     // Create the link command.
     let mut cmd = Command::new(&compiler);
+    cmd.args(g_args);
 
     // Create output directory.
     let out_dir = p.join("./bin/");

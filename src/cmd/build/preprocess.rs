@@ -9,9 +9,9 @@ use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbo
 /// 
 /// Returns a list of the pre-proccesed files that changed.
 /// So we can avoid recompiling unchanged files.
-pub fn preprocess(p: &PathBuf, v: bool, lang: &str, compiler: &String, src: Vec<PathBuf>, inc: &Option<Vec<String>>) -> CmdResult<Vec<PathBuf>> {
+pub fn preprocess(p: &PathBuf, v: bool, g_args: &Vec<String>, lang: &str, compiler: &String, src: Vec<PathBuf>, inc: &Option<Vec<String>>) -> CmdResult<Vec<PathBuf>> {
     let mut args: Vec<String> = Vec::with_capacity(32);
-
+    args.append(&mut g_args.clone());
     args.push(format!("-x{lang}"));
     
     // Output ".i" preprocessed files.

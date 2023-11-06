@@ -6,9 +6,9 @@ use crate::{cmd::result::CmdResult, werror, term::{color::print_label, log_verbo
 
 /// ### Assembler (-c)
 /// Assemble all changed files into object files.
-pub fn assemble(p: &PathBuf, v: bool, lang: &str, compiler: &String, pre_files: Vec<PathBuf>) -> CmdResult<()> {
+pub fn assemble(p: &PathBuf, v: bool, g_args: &Vec<String>, lang: &str, compiler: &String, pre_files: Vec<PathBuf>) -> CmdResult<()> {
     let mut args: Vec<String> = Vec::with_capacity(32);
-
+    args.append(&mut g_args.clone());
     args.push(format!("-x{lang}"));
 
     // Output ".o" object files.
