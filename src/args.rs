@@ -49,6 +49,11 @@ pub fn cli() -> Command {
                         .value_parser(clap::value_parser!(PathBuf))
                         .default_value("."),
                 )
+                .arg(
+                    arg!(target: <TARGET> "Build target")
+                        .required(false)
+                        .value_parser(clap::value_parser!(String)),
+                )
         )
         .subcommand(
             Command::new("clean")
