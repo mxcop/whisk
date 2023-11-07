@@ -10,6 +10,7 @@ glob = "0.3.1"          # Used for manifest filepaths
 
 serde = { version = "1.0.189", features = [ "derive" ] }    # Deserialize trait
 toml = "0.8.2"          # Toml parser
+clap_complete = "4.4.4"
 
 [profile.dev]
 # This isn't required for development builds, but makes development

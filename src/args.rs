@@ -16,16 +16,6 @@ pub fn cli() -> Command {
                 .arg_required_else_help(true),
         )
         .subcommand(
-            Command::new("tree")
-                .about("Make a dependency tree of a whisk project")
-                .arg(
-                    arg!(path: <PATH> "Project path")
-                        .required(false)
-                        .value_parser(clap::value_parser!(PathBuf))
-                        .default_value("."),
-                )
-        )
-        .subcommand(
             Command::new("build")
                 .about("Build a whisk project")
                 .arg(
@@ -39,6 +29,8 @@ pub fn cli() -> Command {
                         .required(false)
                         .value_parser(clap::value_parser!(String)),
                 )
+                .arg(arg!(-t --targets "List all available targets"))
+                .arg(arg!(-r --release "Build in release mode"))
         )
         .subcommand(
             Command::new("run")
@@ -54,6 +46,7 @@ pub fn cli() -> Command {
                         .required(false)
                         .value_parser(clap::value_parser!(String)),
                 )
+                .arg(arg!(-r --release "Run in release mode"))
         )
         .subcommand(
             Command::new("clean")
@@ -64,5 +57,19 @@ pub fn cli() -> Command {
                         .value_parser(clap::value_parser!(PathBuf))
                         .default_value("."),
                 )
+        )
+        .subcommand(
+            Command::new("tree")
+                .about("Make a dependency tree of a whisk project")
+                .arg(
+                    arg!(path: <PATH> "Project path")
+                        .required(false)
+                        .value_parser(clap::value_parser!(PathBuf))
+                        .default_value("."),
+                )
+        )
+        .subcommand(
+            Command::new("genbash")
+                .about("Generate bash completion script for whisk")
         )
 }
