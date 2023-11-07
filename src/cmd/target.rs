@@ -50,7 +50,8 @@ pub fn get_target_info(man: &WhiskManifest, target_arg: Option<&String>, v: bool
                 src: merge(&super_target.src, &starget.src),
                 include: merge(&super_target.include, &starget.include),
                 libs: merge(&super_target.libs, &starget.libs),
-                lib: merge(&super_target.lib, &starget.lib)
+                lib: merge(&super_target.lib, &starget.lib),
+                link: merge(&super_target.link, &starget.link)
             }
         },
         _ => {

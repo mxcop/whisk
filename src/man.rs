@@ -55,7 +55,26 @@ pub struct Target {
     pub src: Option<Vec<String>>,
     pub include: Option<Vec<String>>,
     pub libs: Option<Vec<String>>,
-    pub lib: Option<Vec<String>>
+    pub lib: Option<Vec<String>>,
+    pub link: Option<LinkType>
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
+pub enum LinkType {
+    #[serde(rename = "dynamic")]
+    #[default]
+    Dynamic,
+    #[serde(rename = "static")]
+    Static
+}
+
+impl ToString for LinkType {
+    fn to_string(&self) -> String {
+        match self {
+            LinkType::Dynamic => "-dynamic",
+            LinkType::Static => "-static",
+        }.to_owned()
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -192,9 +211,8 @@ impl Profiles {
 
     /// Get the debug profile as compiler arguments.
     pub fn debug(&self) -> Vec<String> {
-        let opt_level = self.release.as_ref().map_or(Some(OptimizeLevel::Debug), |p| p.clone().opt_level).unwrap();
         let debug = self.release.as_ref().map_or(Some(DebugLevel::Full), |p| p.clone().debug).unwrap();
 
-        vec![opt_level.to_string(), debug.to_string()]
+        vec![debug.to_string()]
     }
 }
