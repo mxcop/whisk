@@ -29,7 +29,8 @@ pub fn cli() -> Command {
                         .required(false)
                         .value_parser(clap::value_parser!(String)),
                 )
-                .arg(arg!(-t --targets "List all available targets").required(false))
+                .arg(arg!(-t --targets "List all available targets"))
+                .arg(arg!(-r --release "Build in release mode"))
         )
         .subcommand(
             Command::new("run")
@@ -45,6 +46,7 @@ pub fn cli() -> Command {
                         .required(false)
                         .value_parser(clap::value_parser!(String)),
                 )
+                .arg(arg!(-r --release "Run in release mode"))
         )
         .subcommand(
             Command::new("clean")

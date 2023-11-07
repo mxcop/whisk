@@ -56,7 +56,11 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
 
     // Global compiler arguments.
     let mut g_args: Vec<String> = Vec::new();
-    g_args.append(&mut cfg.profile.unwrap_or_default().debug()); // TEMP: testing
+    if *args.get_one::<bool>("release").expect("Issue with clap [release flag]") {
+        g_args.append(&mut cfg.profile.unwrap_or_default().release());
+    } else {
+        g_args.append(&mut cfg.profile.unwrap_or_default().debug());
+    }
     g_args.push(target.link.unwrap_or_default().to_string());
 
     let timer = std::time::SystemTime::now();
