@@ -5,6 +5,10 @@
 - [x] Checking if manifest file(s) patterns return files.
 - [x] Verbose logging flag for debugging. `-v --verbose`
 - [x] Manifest file build targets. `[target.*]`
+- [x] Manifest profiles for `[profile.dev]` and `[profile.release]`.
+- [x] Manifest link mode/type `static` or `dynamic` linking.
+- [x] Print all available targets flag. `build -t --targets`
+- [ ] Manifest custom profiles. `[profile.*]`
 - [ ] Better naming for manifest fields `lib` & `libs`.
 - [ ] Precompiled headers.
 - [ ] Dynamic library target. (using `-dynamic` flag on `type="lib"` projects)

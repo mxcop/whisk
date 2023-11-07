@@ -5,6 +5,7 @@ Each different section defines a different build target.
 
 ```toml
 [package] # fields directly on the package will be used as default
+name     = "pkg"
 compiler = "gcc"
 src      = [ "main.c", "src/**/*.c" ]
 include  = [ "inc/"  , "lib/glfw/include/" ]

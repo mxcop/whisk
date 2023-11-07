@@ -23,7 +23,7 @@ The first section in a `whisk.toml` is the `[package]`.
 
 ```toml
 [package]
-name = "hello"  # the name of the package   (and binary)
+name = "pkg"    # the name of the package   (and binary)
 lang = "c"      # language of the package   ("c" or "c++")
 type = "exe"    # type of the package       ("exe" or "lib") 
 ```

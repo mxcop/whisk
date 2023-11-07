@@ -213,8 +213,9 @@ impl Profiles {
     /// Get the debug profile as compiler arguments.
     pub fn debug(&self) -> Vec<String> {
         // TODO: make these statements better...
+        let opt_level = self.release.as_ref().map_or(Some(OptimizeLevel::Debug), |p| p.clone().opt_level.map_or(Some(OptimizeLevel::Debug), |f| Some(f))).unwrap();
         let debug = self.release.as_ref().map_or(Some(DebugLevel::Full), |p| p.clone().debug.map_or(Some(DebugLevel::Full), |f| Some(f))).unwrap();
 
-        vec![debug.to_string()]
+        vec![opt_level.to_string(), debug.to_string()]
     }
 }
