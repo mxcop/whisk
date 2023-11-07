@@ -33,7 +33,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
 
     // List targets.
-    if *args.get_one::<bool>("targets").expect("Issue with clap [targets flag]") {
+    if let Some(true) = args.get_one::<bool>("targets") {
         let Some(targets) = cfg.target else {
             return Ok(());
         };
