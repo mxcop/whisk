@@ -203,15 +203,17 @@ impl Target {
 impl Profiles {
     /// Get the release profile as compiler arguments.
     pub fn release(&self) -> Vec<String> {
-        let opt_level = self.release.as_ref().map_or(Some(OptimizeLevel::OptimizeYetMore), |p| p.clone().opt_level).unwrap();
-        let debug = self.release.as_ref().map_or(Some(DebugLevel::None), |p| p.clone().debug).unwrap();
+        // TODO: make these statements better...
+        let opt_level = self.release.as_ref().map_or(Some(OptimizeLevel::OptimizeYetMore), |p| p.clone().opt_level.map_or(Some(OptimizeLevel::OptimizeYetMore), |f| Some(f))).unwrap();
+        let debug = self.release.as_ref().map_or(Some(DebugLevel::None), |p| p.clone().debug.map_or(Some(DebugLevel::None), |f| Some(f))).unwrap();
 
         vec![opt_level.to_string(), debug.to_string()]
     }
 
     /// Get the debug profile as compiler arguments.
     pub fn debug(&self) -> Vec<String> {
-        let debug = self.release.as_ref().map_or(Some(DebugLevel::Full), |p| p.clone().debug).unwrap();
+        // TODO: make these statements better...
+        let debug = self.release.as_ref().map_or(Some(DebugLevel::Full), |p| p.clone().debug.map_or(Some(DebugLevel::Full), |f| Some(f))).unwrap();
 
         vec![debug.to_string()]
     }
