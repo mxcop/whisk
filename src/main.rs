@@ -14,6 +14,11 @@ fn main() {
 
     // Execute subcommand.
     let res = match matches.subcommand() {
+        Some(("genbash", ..)) => {
+            use clap_complete::shells::Bash;
+            clap_complete::generate(Bash, &mut args::cli(), "whisk", &mut std::io::stdout());
+            Ok(())
+        }
         Some(("new", _matches)) => todo!(),
         Some(("tree", matches)) => tree::gen_tree(matches),
         Some(("build", matches)) => build::build(matches),

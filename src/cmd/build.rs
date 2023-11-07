@@ -32,6 +32,17 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
     // Parse project config file.
     let cfg: WhiskManifest = toml_result(toml::from_str(&toml))?;
 
+    // List targets.
+    if *args.get_one::<bool>("targets").expect("Issue with clap [targets flag]") {
+        let Some(targets) = cfg.target else {
+            return Ok(());
+        };
+        for (target, ..) in targets.custom {
+            println!("{target}");
+        }
+        return Ok(());
+    }
+
     // Get build target information for this package.
     let target = target::get_target_info(&cfg, args.get_one::<String>("target"), v);
 
