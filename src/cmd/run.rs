@@ -36,9 +36,9 @@ pub fn run(args: &ArgMatches) -> CmdResult<()> {
     // Gather binary output paths.
     let bin = bin_dir.join(&cfg.package.name);
     let mut abs_bin = canonicalize(&bin_dir).expect("Failed to get absolute bin directory")
-        .to_string_lossy().trim_start_matches("\\\\?\\").to_owned().replace("/", "\\");
+        .to_string_lossy().trim_start_matches("\\\\?\\").to_owned().replace("\\", "/");
 
-    abs_bin.push('\\');
+    abs_bin.push('/');
     abs_bin.push_str(&cfg.package.name);
     #[cfg(target_os = "windows")]
     abs_bin.push_str(".exe");

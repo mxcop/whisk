@@ -51,11 +51,17 @@ pub enum PackageType {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Target {
+    /// Compiler to use for this target.
     pub compiler: Option<String>,
+    /// List of source file globs.
     pub src: Option<Vec<String>>,
+    /// List of include directories.
     pub include: Option<Vec<String>>,
+    /// List of library directories.
     pub libs: Option<Vec<String>>,
+    /// List of libraries.
     pub lib: Option<Vec<String>>,
+    /// How to link the target.
     pub link: Option<LinkType>
 }
 
@@ -72,7 +78,7 @@ impl ToString for LinkType {
     fn to_string(&self) -> String {
         match self {
             LinkType::Dynamic => "-dynamic",
-            LinkType::Static => "-static",
+            LinkType::Static => "-static"
         }.to_owned()
     }
 }

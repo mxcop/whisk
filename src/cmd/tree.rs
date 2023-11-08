@@ -81,16 +81,16 @@ pub fn gen_tree(args: &ArgMatches) -> CmdResult<()> {
             ' ' => {
                 idx += 1;
                 if idx == 2 {
-                    file.src = dep.replace("/", "\\");
+                    file.src = dep.replace("\\", "/");
                 }
                 else if idx > 2 {
-                    file.deps.push(dep.replace("/", "\\"));
+                    file.deps.push(dep.replace("\\", "/"));
                 }
                 dep = String::new();
             },
             '\n' => {
                 idx = 0;
-                file.deps.push(dep.replace("/", "\\"));
+                file.deps.push(dep.replace("\\", "/"));
                 dep = String::new();
                 files.push(file);
                 file = File::new();

@@ -23,8 +23,8 @@ where
     print!(
         "  {} {}{}{}",
         label.fg::<C>(),
-        path.to_string_lossy().replace("/", "\\").dimmed(),
-        "\\".dimmed(),
+        path.to_string_lossy().replace("\\", "/").dimmed(),
+        "/".dimmed(),
         file_name.italic()
     );
 

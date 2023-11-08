@@ -17,7 +17,7 @@ pub fn build(args: &ArgMatches) -> CmdResult<()> {
         return Err(werror!("filesystem", "{:?} isn't a directory", pwd));
     }
     let abs = canonicalize(&pwd).expect("Failed to get absolute project path").to_string_lossy().to_string();
-    let abs = abs.trim_start_matches("\\\\?\\").to_owned().replace("/", "\\");
+    let abs = abs.trim_start_matches("\\\\?\\").to_owned().replace("\\", "/");
 
     let v = *args
         .get_one::<bool>("verbose")
